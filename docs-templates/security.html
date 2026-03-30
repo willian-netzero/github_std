@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Security (Template)</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+      --green: #3fb950; --red: #f85149; --orange: #d29922;
+      --purple: #bc8cff; --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    .badge { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.8rem; color: var(--accent); margin: 0.3rem 0.15rem; }
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--purple); }
+    p { margin-bottom: 0.8rem; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.8rem 0 1.2rem; font-size: 0.88rem; line-height: 1.5; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace; font-size: 0.88rem; }
+    p code, li code, td code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.4rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout-bad { background: rgba(248,81,73,0.08); border-color: var(--red); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 0.8rem 0; padding: 0.8rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    details[open] summary { margin-bottom: 0.6rem; }
+    @media print { body { background: #fff; color: #222; } pre { border-color: #ccc; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NetZero — Security (Template)</h1>
+      <p>Security policies and practices — every contributor must follow these rules</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge">template</span>
+        <span class="badge">per-project</span>
+        <span class="badge">mandatory</span>
+      </div>
+    </header>
+
+    <nav>
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#golden-rules">Golden Rules</a></li>
+        <li><a href="#secret-management">Secret Management</a></li>
+        <li><a href="#authentication-authorization">Authentication & Authorization</a></li>
+        <li><a href="#input-validation">Input Validation</a></li>
+        <li><a href="#dependency-security">Dependency Security</a></li>
+        <li><a href="#docker-security">Docker Security</a></li>
+        <li><a href="#logging-monitoring">Logging & Monitoring</a></li>
+        <li><a href="#incident-response">Incident Response</a></li>
+        <li><a href="#compliance-notes">Compliance Notes</a></li>
+      </ol>
+    </nav>
+
+    <section id="golden-rules">
+      <h2>Golden Rules</h2>
+      <div class="callout callout-bad">
+        <strong>Every contributor must follow these rules. No exceptions.</strong>
+        <ol>
+          <li><strong>Never commit secrets.</strong> No API keys, tokens, passwords, or connection strings in code.</li>
+          <li><strong>Never trust user input.</strong> Validate and sanitize everything at the boundary.</li>
+          <li><strong>Never run as root.</strong> Docker containers use non-root users. Services use least-privilege.</li>
+          <li><strong>Never skip dependency audits.</strong> CI blocks merge when critical vulnerabilities are found.</li>
+          <li><strong>Never log sensitive data.</strong> Mask PII, tokens, and credentials in all log output.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="secret-management">
+      <h2>Secret Management</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Environment</th>
+            <th>Method</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Local dev</td>
+            <td><code>.env</code> file (never committed, in <code>.gitignore</code>)</td>
+          </tr>
+          <tr>
+            <td>CI/CD</td>
+            <td>GitHub Actions Secrets</td>
+          </tr>
+          <tr>
+            <td>Staging/Prod</td>
+            <td><em>e.g. Vault, AWS Secrets Manager, K8s Secrets</em></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>What counts as a secret</h3>
+      <ul>
+        <li>API keys and tokens (including internal service tokens)</li>
+        <li>Database connection strings</li>
+        <li>JWT signing keys</li>
+        <li>OAuth client secrets</li>
+        <li>SSH keys and certificates</li>
+        <li>Any credential that grants access to a system</li>
+      </ul>
+
+      <h3>If a secret is accidentally committed</h3>
+      <div class="callout callout-warn">
+        <ol>
+          <li><strong>Immediately rotate the secret</strong> — consider it compromised</li>
+          <li>Notify the team lead</li>
+          <li>Remove it from git history using <code>git filter-repo</code> or <code>BFG Repo Cleaner</code></li>
+          <li>Add a <code>.gitignore</code> rule to prevent recurrence</li>
+          <li>Document the incident</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="authentication-authorization">
+      <h2>Authentication & Authorization</h2>
+      <ul>
+        <li><em>e.g. JWT tokens with refresh rotation</em></li>
+        <li><em>e.g. Role-based access control (RBAC)</em></li>
+        <li><em>e.g. API key authentication for service-to-service</em></li>
+      </ul>
+      <p><em>Describe how auth works in this project.</em></p>
+    </section>
+
+    <section id="input-validation">
+      <h2>Input Validation</h2>
+      <ul>
+        <li>All external input is validated at the <strong>API/endpoint layer</strong> before reaching services</li>
+        <li>Use schema validation (<em>Pydantic for Python, Zod/Yup for JS/TS</em>)</li>
+        <li>Reject invalid input with clear error messages (400/422 responses)</li>
+        <li>Never construct SQL with string formatting — use parameterized queries</li>
+        <li>File uploads must be validated for type, size, and content</li>
+      </ul>
+    </section>
+
+    <section id="dependency-security">
+      <h2>Dependency Security</h2>
+      <ul>
+        <li>CI runs <code>pip audit</code> (Python) / <code>npm audit</code> (JS/TS) on every PR</li>
+        <li>Critical vulnerabilities <strong>block merge</strong></li>
+        <li>Dependencies are updated regularly (at least monthly)</li>
+        <li>Only use well-maintained, reputable packages</li>
+        <li>Pin dependency versions — no <code>latest</code> or wildcard versions in production</li>
+      </ul>
+    </section>
+
+    <section id="docker-security">
+      <h2>Docker Security</h2>
+      <ul>
+        <li>Base images must use specific version tags (no <code>:latest</code>)</li>
+        <li>Run as non-root user (<code>USER 1001</code> in Dockerfile)</li>
+        <li>Multi-stage builds to minimize image size and attack surface</li>
+        <li>No secrets in Dockerfile or docker-compose files</li>
+        <li>Health checks must be defined</li>
+        <li>Scan images with <code>trivy</code> or <code>docker scout</code> before deploy</li>
+      </ul>
+    </section>
+
+    <section id="logging-monitoring">
+      <h2>Logging & Monitoring</h2>
+
+      <h3>What to log</h3>
+      <ul>
+        <li>Request/response metadata (method, path, status, duration)</li>
+        <li>Business events (user actions, state transitions)</li>
+        <li>Errors with stack traces and context</li>
+      </ul>
+
+      <h3>What NOT to log</h3>
+      <ul>
+        <li>Passwords or tokens (even partially)</li>
+        <li>Full credit card numbers</li>
+        <li>Personal data (email, phone) — mask if needed for debugging</li>
+        <li>Request/response bodies containing sensitive fields</li>
+      </ul>
+    </section>
+
+    <section id="incident-response">
+      <h2>Incident Response</h2>
+      <p>If you discover a security issue:</p>
+      <ol>
+        <li><strong>Do not discuss in public channels</strong> (Slack, GitHub issues)</li>
+        <li>Notify the security contact: <em>@security-lead / security@netzero.green</em></li>
+        <li>Document: what, when, how discovered, potential impact</li>
+        <li>Fix in a private branch, merge via PR with minimal description</li>
+        <li>Post-mortem after resolution</li>
+      </ol>
+    </section>
+
+    <section id="compliance-notes">
+      <h2>Compliance Notes</h2>
+      <ul>
+        <li><em>e.g. LGPD (Brazilian data protection)</em></li>
+        <li><em>e.g. ISO 27001</em></li>
+        <li><em>e.g. SOC 2</em></li>
+      </ul>
+      <p><em>If applicable, list relevant compliance requirements.</em></p>
+    </section>
+
+    <footer>
+      <p>NetZero Engineering · Docs Template · Customize for each project</p>
+    </footer>
+  </div>
+</body>
+</html>
