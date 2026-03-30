@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Development Best Practices</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --purple: #bc8cff;
+      --code-bg: #0d1117;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin: 0.3rem 0.15rem;
+    }
+
+    /* Navigation */
+    nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+
+    /* Sections */
+    section { margin-bottom: 3rem; }
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.2rem;
+    }
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.6rem;
+      color: var(--accent);
+    }
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1rem 0 0.4rem;
+      color: var(--purple);
+    }
+
+    p { margin-bottom: 0.8rem; }
+
+    /* Code blocks */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0.8rem 0 1.2rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      font-size: 0.88rem;
+    }
+    p code, li code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+    }
+
+    /* Lists */
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0 1.2rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border);
+    }
+    th { background: var(--surface); font-weight: 600; }
+
+    /* Callouts */
+    .callout {
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+      border-left: 4px solid;
+    }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout-bad  { background: rgba(248,81,73,0.08); border-color: var(--red); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    /* Flow diagram (ASCII) */
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .flow .arrow { color: var(--green); }
+    .flow .branch { color: var(--accent); }
+    .flow .tag { color: var(--orange); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      margin-top: 3rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    /* Details */
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0.8rem 0;
+      padding: 0.8rem 1rem;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    details[open] summary { margin-bottom: 0.6rem; }
+
+    @media print {
+      body { background: #fff; color: #222; }
+      pre { border-color: #ccc; }
+      .callout { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Development Best Practices</h1>
+  <p>Git workflow, code standards &amp; CI/CD for NetZero engineering teams</p>
+  <div style="margin-top: 1rem;">
+    <span class="badge">Python</span>
+    <span class="badge">JS / TS</span>
+    <span class="badge">React</span>
+    <span class="badge">TLPP</span>
+    <span class="badge">Node-RED</span>
+  </div>
+</header>
+
+<!-- TABLE OF CONTENTS -->
+<nav>
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#branching">Branching Strategy</a></li>
+    <li><a href="#commits">Commit Conventions</a></li>
+    <li><a href="#project-structure">Project Structure &amp; Layer Segregation</a></li>
+    <li><a href="#pull-requests">Pull Requests &amp; Code Review</a></li>
+    <li><a href="#github-actions">GitHub Actions — CI/CD Pipelines</a></li>
+    <li><a href="#templates">Repository Templates</a></li>
+    <li><a href="#checklist">Quick-Reference Checklist</a></li>
+  </ol>
+</nav>
+
+
+<!-- ============================================================ -->
+<!-- 1. BRANCHING -->
+<!-- ============================================================ -->
+<section id="branching">
+<h2>1. Branching Strategy</h2>
+
+<p>We follow <strong>GitHub Flow</strong> — a simple, trunk-based model that works for all stacks. There is one long-lived branch (<code>main</code>) and short-lived feature branches.</p>
+
+<div class="flow">
+<pre style="border:none;background:transparent;text-align:left;display:inline-block;">
+<span class="branch">main</span>  ─────●────────●────────●────────●──────── (always deployable)
+              \              \       ↑       ↑
+               \              \     │       │
+  <span class="branch">feat/login</span>  ──●──●──●──PR──┘       │
+                         <span class="branch">fix/api-timeout</span>  ──●──PR──┘
+</pre>
+</div>
+
+<h3>Branch naming</h3>
+<table>
+  <tr><th>Prefix</th><th>Purpose</th><th>Example</th></tr>
+  <tr><td><code>feat/</code></td><td>New feature</td><td><code>feat/user-auth</code></td></tr>
+  <tr><td><code>fix/</code></td><td>Bug fix</td><td><code>fix/api-timeout</code></td></tr>
+  <tr><td><code>refactor/</code></td><td>Code improvement (no behavior change)</td><td><code>refactor/extract-service</code></td></tr>
+  <tr><td><code>chore/</code></td><td>Tooling, deps, config</td><td><code>chore/update-deps</code></td></tr>
+  <tr><td><code>docs/</code></td><td>Documentation only</td><td><code>docs/api-readme</code></td></tr>
+  <tr><td><code>test/</code></td><td>Adding or fixing tests</td><td><code>test/auth-unit-tests</code></td></tr>
+  <tr><td><code>hotfix/</code></td><td>Critical production fix</td><td><code>hotfix/null-pointer-crash</code></td></tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>Rule: short-lived branches only.</strong>
+  A feature branch should live at most 3–5 days. If a feature is large, break it into smaller PRs behind a feature flag.
+</div>
+
+<h3>Protected branch rules for <code>main</code></h3>
+<ul>
+  <li>Require pull request before merging (no direct push)</li>
+  <li>Require at least 1 approval</li>
+  <li>Require status checks to pass (lint + tests)</li>
+  <li>Require branch to be up-to-date with <code>main</code></li>
+  <li>Require linear history (squash or rebase merge)</li>
+</ul>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 2. COMMITS -->
+<!-- ============================================================ -->
+<section id="commits">
+<h2>2. Commit Conventions</h2>
+
+<p>We use <strong>Conventional Commits</strong> to keep history readable and enable automated changelogs.</p>
+
+<pre><code>&lt;type&gt;(&lt;scope&gt;): &lt;short description&gt;
+
+[optional body]
+
+[optional footer(s)]</code></pre>
+
+<h3>Types</h3>
+<table>
+  <tr><th>Type</th><th>When to use</th></tr>
+  <tr><td><code>feat</code></td><td>A new feature visible to the user</td></tr>
+  <tr><td><code>fix</code></td><td>A bug fix</td></tr>
+  <tr><td><code>refactor</code></td><td>Code change that neither fixes a bug nor adds a feature</td></tr>
+  <tr><td><code>test</code></td><td>Adding or updating tests</td></tr>
+  <tr><td><code>docs</code></td><td>Documentation changes</td></tr>
+  <tr><td><code>chore</code></td><td>Build process, dependencies, CI config</td></tr>
+  <tr><td><code>style</code></td><td>Formatting, missing semicolons (no logic change)</td></tr>
+  <tr><td><code>perf</code></td><td>Performance improvement</td></tr>
+</table>
+
+<h3>Examples</h3>
+<pre><code>feat(auth): add JWT refresh token rotation
+fix(api): handle null response from carbon-credit endpoint
+refactor(dashboard): extract chart component to shared module
+chore(deps): bump react from 18.2 to 18.3
+test(billing): add integration tests for invoice generation</code></pre>
+
+<div class="callout callout-good">
+  <strong>Good commits</strong>
+  Each commit represents one logical change. If you need the word "and" in your message, it should probably be two commits.
+</div>
+
+<div class="callout callout-bad">
+  <strong>Avoid</strong>
+  <code>fix stuff</code>, <code>WIP</code>, <code>changes</code>, <code>update</code> — these say nothing about what changed or why.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 3. PROJECT STRUCTURE -->
+<!-- ============================================================ -->
+<section id="project-structure">
+<h2>3. Project Structure &amp; Layer Segregation</h2>
+
+<p>Regardless of stack, every project must have clear separation of concerns. The layer names may change, but the principle stays the same: <strong>each layer has one responsibility and depends only on the layers below it.</strong></p>
+
+<h3>General layered architecture</h3>
+<pre><code>┌─────────────────────────────────────────┐
+│           Presentation / UI             │  ← React components, views, CLI, Node-RED dashboard
+├─────────────────────────────────────────┤
+│           Application / Service         │  ← Use cases, orchestration, business rules
+├─────────────────────────────────────────┤
+│           Domain / Model                │  ← Entities, value objects, domain logic
+├─────────────────────────────────────────┤
+│           Infrastructure                │  ← DB, HTTP clients, queues, file system, external APIs
+└─────────────────────────────────────────┘
+
+  Dependency direction: top → bottom (never upward)</code></pre>
+
+<h3>Stack-specific examples</h3>
+
+<details>
+<summary>Python (FastAPI / Flask)</summary>
+<pre><code>project-name/
+├── src/
+│   ├── api/               # Routes / controllers (Presentation)
+│   │   ├── routes/
+│   │   └── middleware/
+│   ├── services/          # Business logic (Application)
+│   ├── models/            # Domain entities (Domain)
+│   │   ├── schemas/       # Pydantic / serialization
+│   │   └── entities/      # Core domain objects
+│   ├── repositories/      # Data access (Infrastructure)
+│   └── config/            # Settings, env vars
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── conftest.py
+├── pyproject.toml
+├── Dockerfile
+└── README.md</code></pre>
+</details>
+
+<details>
+<summary>JS / TS (React frontend)</summary>
+<pre><code>project-name/
+├── src/
+│   ├── components/        # UI components (Presentation)
+│   │   ├── common/        # Shared / reusable
+│   │   └── features/      # Feature-specific
+│   ├── hooks/             # Custom React hooks
+│   ├── services/          # API calls, business logic (Application)
+│   ├── models/            # Types, interfaces (Domain)
+│   ├── utils/             # Helpers, formatters
+│   └── config/            # Env, constants
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── package.json
+├── Dockerfile
+└── README.md</code></pre>
+</details>
+
+<details>
+<summary>TLPP (Protheus / TOTVS)</summary>
+<pre><code>proto-{name}/
+├── src/
+│   ├── purchase-request/
+│   │   ├── endpoint.tlpp      # REST entrypoint — receives HTTP, calls service, returns response
+│   │   ├── service.tlpp       # Orchestrates use case (validation → mapping → ExecAuto)
+│   │   ├── validation.tlpp    # Payload validation + business rules
+│   │   ├── mapping.tlpp       # SC1 / MATA110 field mapping (JSON ↔ Protheus)
+│   │   └── query.tlpp         # Complex reads only (multi-table joins)
+│   ├── purchase-order/
+│   │   ├── endpoint.tlpp
+│   │   ├── service.tlpp
+│   │   ├── validation.tlpp
+│   │   ├── mapping.tlpp       # SC7 / MATA120 field mapping
+│   │   └── query.tlpp
+│   └── shared/
+│       ├── rest/
+│       │   ├── response.tlpp  # Standard JSON response builder
+│       │   └── error.tlpp     # Error codes catalog
+│       ├── protheus/
+│       │   ├── dates.tlpp     # ISO ↔ Protheus date conversion
+│       │   ├── environment.tlpp  # PREPARE / OpenEnv setup
+│       │   ├── logging.tlpp   # Structured ConOut logging
+│       │   └── execauto.tlpp  # ExecAuto wrapper with error handling
+│       └── utils/
+│           └── strings.tlpp
+├── includes/                  # TLPP/TOTVS headers (.ch / .th)
+├── payloads/                  # Sample request JSONs for testing
+├── tests/
+│   ├── assets/                # Static test data
+│   └── integration/           # REST integration tests
+├── patchs/                    # RPO patch artifacts
+├── docs/
+└── README.md</code></pre>
+</details>
+
+<details>
+<summary>Node-RED</summary>
+<pre><code>node-red-project/
+├── flows/                 # Exported flow JSON files
+│   ├── main-flow.json
+│   └── subflows/
+├── custom-nodes/          # Custom node implementations
+│   ├── src/
+│   └── test/
+├── config/                # Environment configs
+├── docs/                  # Flow diagrams, descriptions
+├── package.json
+└── README.md</code></pre>
+</details>
+
+<h3>Clean Code — Non-Negotiable Rules</h3>
+<ol>
+  <li><strong>No business logic in controllers/routes.</strong> Controllers receive the request, call a service, return the response. That's it.</li>
+  <li><strong>No database queries outside the repository/DAO layer.</strong> Services never import the ORM or run raw SQL.</li>
+  <li><strong>One file, one responsibility.</strong> A file named <code>user_service.py</code> should only handle user-related operations.</li>
+  <li><strong>Shared code goes in <code>utils/</code> or <code>common/</code>.</strong> Never duplicate logic across features.</li>
+  <li><strong>Configuration lives in environment variables</strong>, not hardcoded strings. Use <code>.env</code> files locally, secrets in CI.</li>
+  <li><strong>All public functions and API endpoints must be documented</strong> — docstrings for Python, JSDoc for JS/TS, comments for TLPP.</li>
+  <li><strong>Dependencies flow inward.</strong> The domain layer never imports from the infrastructure layer.</li>
+</ol>
+
+<div class="callout callout-warn">
+  <strong>Common violation</strong>
+  Putting a database query inside a React component or an API route handler. If you see <code>SELECT</code> or <code>db.query()</code> in a controller, that's a code review rejection.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 4. PULL REQUESTS -->
+<!-- ============================================================ -->
+<section id="pull-requests">
+<h2>4. Pull Requests &amp; Code Review</h2>
+
+<h3>PR template (auto-applied via GitHub)</h3>
+<pre><code>## What does this PR do?
+&lt;!-- Describe the change in 1–3 sentences --&gt;
+
+## Type of change
+- [ ] feat — new feature
+- [ ] fix — bug fix
+- [ ] refactor — code improvement
+- [ ] chore — tooling / deps
+- [ ] docs — documentation
+- [ ] test — tests only
+
+## How was this tested?
+&lt;!-- Describe the tests you ran --&gt;
+
+## Checklist
+- [ ] Code follows the layer separation guidelines
+- [ ] No business logic in controllers/routes
+- [ ] No hardcoded secrets or credentials
+- [ ] Tests added or updated
+- [ ] Linter passes with no warnings
+- [ ] Self-reviewed my own code
+- [ ] No console.log / print() left behind</code></pre>
+
+<h3>Code review guidelines</h3>
+<p>The reviewer is the last line of defense before code reaches <code>main</code>. Review for these, in this order:</p>
+
+<ol>
+  <li><strong>Correctness</strong> — Does it do what the PR description says?</li>
+  <li><strong>Architecture</strong> — Are the layers respected? Is the right pattern used?</li>
+  <li><strong>Security</strong> — No exposed secrets, no SQL injection, no unvalidated input?</li>
+  <li><strong>Tests</strong> — Is the new/changed behavior covered by tests?</li>
+  <li><strong>Readability</strong> — Can another developer understand this in 6 months?</li>
+  <li><strong>Performance</strong> — Any obvious N+1 queries, unnecessary loops, or memory leaks?</li>
+</ol>
+
+<h3>Merge rules</h3>
+<table>
+  <tr><th>Condition</th><th>Required?</th></tr>
+  <tr><td>At least 1 reviewer approval</td><td>Yes</td></tr>
+  <tr><td>All CI checks passing (lint + tests)</td><td>Yes</td></tr>
+  <tr><td>PR description filled out</td><td>Yes</td></tr>
+  <tr><td>No unresolved review comments</td><td>Yes</td></tr>
+  <tr><td>Branch up-to-date with <code>main</code></td><td>Yes</td></tr>
+  <tr><td>Squash merge (single clean commit)</td><td>Recommended</td></tr>
+</table>
+
+<div class="callout callout-info">
+  <strong>Automated enforcement</strong>
+  All of these rules are enforced by GitHub branch protection + status checks. Developers cannot bypass them.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 5. GITHUB ACTIONS -->
+<!-- ============================================================ -->
+<section id="github-actions">
+<h2>5. GitHub Actions — CI/CD Pipelines</h2>
+
+<p>Every repository must have at minimum a <strong>PR validation pipeline</strong> that runs on every pull request. Below are ready-to-use workflows for each stack.</p>
+
+<h3>5.1 — Universal PR validation (all repos)</h3>
+<p>This workflow enforces that the PR title follows Conventional Commits and that the PR template checklist is filled.</p>
+
+<pre><code># .github/workflows/pr-validation.yml
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Conventional Commit title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            chore
+            docs
+            test
+            style
+            perf
+          requireScope: false
+          subjectPattern: ^[a-z].+$
+          subjectPatternError: |
+            The PR title "{subject}" must start with a lowercase letter.
+
+  validate-pr-body:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description is not empty
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            if (body.trim().length < 20) {
+              core.setFailed('PR description is too short. Please fill out the template.');
+            }</code></pre>
+
+<h3>5.2 — Python (lint + test)</h3>
+<pre><code># .github/workflows/python-ci.yml
+name: Python CI
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install ruff mypy
+
+      - name: Lint with Ruff
+        run: ruff check src/ --output-format=github
+
+      - name: Type check with mypy
+        run: mypy src/ --ignore-missing-imports
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=70
+
+  architecture-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check layer violations
+        run: |
+          echo "Checking for database imports in API layer..."
+          if grep -rn "import.*sqlalchemy\|from.*models.*import" src/api/ 2>/dev/null; then
+            echo "::error::API layer must not import database models directly. Use services."
+            exit 1
+          fi
+          echo "No layer violations found."</code></pre>
+
+<h3>5.3 — JavaScript / TypeScript (lint + test)</h3>
+<pre><code># .github/workflows/js-ci.yml
+name: JS/TS CI
+
+on:
+  pull_request:
+    paths:
+      - '**.js'
+      - '**.ts'
+      - '**.tsx'
+      - '**.jsx'
+      - 'package.json'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Lint
+        run: npx eslint src/ --max-warnings=0
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run tests
+        run: npx jest --coverage --coverageThreshold='{"global":{"branches":60,"functions":70,"lines":70}}'
+
+  architecture-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for console.log in production code
+        run: |
+          if grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v "// allowed" | grep -v ".test." | grep -v ".spec."; then
+            echo "::error::Remove console.log/debug from production code."
+            exit 1
+          fi
+          echo "No console.log violations found."</code></pre>
+
+<h3>5.4 — Docker build validation (all repos with Dockerfile)</h3>
+<pre><code># .github/workflows/docker-validate.yml
+name: Docker Validation
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
+      - name: Build image (no push)
+        run: docker build -t test-build:pr-${{ github.event.number }} .</code></pre>
+
+<h3>5.5 — Auto-label PRs by path</h3>
+<pre><code># .github/workflows/auto-label.yml
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}</code></pre>
+
+<p>Requires a <code>.github/labeler.yml</code> config:</p>
+<pre><code># .github/labeler.yml
+python:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.py'
+
+javascript:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.{js,ts,tsx,jsx}'
+
+tlpp:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.tlpp'
+
+docker:
+  - changed-files:
+    - any-glob-to-any-file: 'Dockerfile*'
+
+docs:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'</code></pre>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 6. TEMPLATES -->
+<!-- ============================================================ -->
+<section id="templates">
+<h2>6. Repository Templates</h2>
+
+<p>To ensure every new project starts with the right structure, we use <strong>GitHub template repositories</strong>. When creating a new repo, select the appropriate template and the entire structure is copied automatically.</p>
+
+<h3>What goes in every template</h3>
+<pre><code>template-{stack}/
+├── .github/
+│   ├── workflows/          # CI/CD pipelines (from Section 5)
+│   │   ├── pr-validation.yml
+│   │   └── {stack}-ci.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug-report.yml
+│   │   └── feature-request.yml
+│   └── labeler.yml
+├── src/                    # Pre-configured layer structure
+├── tests/
+├── .editorconfig           # Consistent formatting across IDEs
+├── .gitignore              # Stack-specific ignores
+├── Dockerfile              # Base Dockerfile
+├── docker-compose.yml      # Local dev environment
+├── README.md               # Standard README template
+└── CONTRIBUTING.md          # Link to this document</code></pre>
+
+<h3>Issue templates</h3>
+
+<details>
+<summary>Bug Report template (<code>.github/ISSUE_TEMPLATE/bug-report.yml</code>)</summary>
+<pre><code>name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      placeholder: A clear description of what the bug is
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low — cosmetic issue
+        - Medium — feature partially broken
+        - High — feature completely broken
+        - Critical — production down
+    validations:
+      required: true</code></pre>
+</details>
+
+<details>
+<summary>Feature Request template (<code>.github/ISSUE_TEMPLATE/feature-request.yml</code>)</summary>
+<pre><code>name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      placeholder: What problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      placeholder: Describe the solution you'd like
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      placeholder: Any other approaches you considered?
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Affected stack
+      multiple: true
+      options:
+        - Python backend
+        - JS/TS frontend
+        - TLPP / Protheus
+        - TLPP / Protheus
+        - Node-RED
+        - Infrastructure / DevOps
+    validations:
+      required: true</code></pre>
+</details>
+
+<h3>.editorconfig (all repos)</h3>
+<pre><code># .editorconfig
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.py]
+indent_size = 4
+
+[*.rs]
+indent_size = 4
+
+[Makefile]
+indent_style = tab</code></pre>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 7. CHECKLIST -->
+<!-- ============================================================ -->
+<section id="checklist">
+<h2>7. Quick-Reference Checklist</h2>
+
+<h3>Before starting work</h3>
+<ul>
+  <li>Pull the latest <code>main</code></li>
+  <li>Create a branch with the correct prefix (<code>feat/</code>, <code>fix/</code>, etc.)</li>
+  <li>Check if there's an issue linked to your task</li>
+</ul>
+
+<h3>While coding</h3>
+<ul>
+  <li>Keep business logic out of controllers/routes</li>
+  <li>Keep database access in the repository/DAO layer</li>
+  <li>Write tests alongside your code, not after</li>
+  <li>Commit small and often with Conventional Commit messages</li>
+  <li>No secrets, no hardcoded URLs, no <code>console.log</code></li>
+</ul>
+
+<h3>Before opening a PR</h3>
+<ul>
+  <li>Run the linter locally</li>
+  <li>Run tests locally and confirm they pass</li>
+  <li>Rebase on top of <code>main</code> if your branch is behind</li>
+  <li>Fill out the PR template completely</li>
+  <li>Self-review your diff one last time</li>
+</ul>
+
+<h3>As a reviewer</h3>
+<ul>
+  <li>Check architecture and layer separation first</li>
+  <li>Verify tests actually cover the new behavior</li>
+  <li>Look for security issues (exposed secrets, unvalidated input)</li>
+  <li>Be constructive — suggest solutions, not just problems</li>
+  <li>Approve only when CI is green and you're confident</li>
+</ul>
+</section>
+
+
+<footer>
+  <p>NetZero Engineering &mdash; Development Best Practices v1.0</p>
+  <p>This document is maintained in the <code>netzero-hq</code> GitHub organization. Changes follow the same PR process described here.</p>
+</footer>
+
+</div>
+</body>
+</html>
