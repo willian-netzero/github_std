@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Architecture (Template)</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --purple: #bc8cff;
+      --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    .badge { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.8rem; color: var(--accent); margin: 0.3rem 0.15rem; }
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--purple); }
+    p { margin-bottom: 0.8rem; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.8rem 0 1.2rem; font-size: 0.88rem; line-height: 1.5; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace; font-size: 0.88rem; }
+    p code, li code, td code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.4rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout-bad { background: rgba(248,81,73,0.08); border-color: var(--red); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+    .flow { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; text-align: center; font-family: monospace; font-size: 0.85rem; line-height: 1.8; overflow-x: auto; margin: 1rem 0; }
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 0.8rem 0; padding: 0.8rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    details[open] summary { margin-bottom: 0.6rem; }
+    @media print { body { background: #fff; color: #222; } pre { border-color: #ccc; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NetZero — Architecture (Template)</h1>
+      <p>Technical architecture overview — system components, communication, and design decisions</p>
+      <div>
+        <span class="badge">template</span>
+        <span class="badge">per-project</span>
+      </div>
+    </header>
+
+    <nav>
+      <h2>Table of Contents</h2>
+      <ol>
+        <li><a href="#overview">System Overview</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="#structure">Project Structure</a></li>
+        <li><a href="#layers">Layer Separation</a></li>
+        <li><a href="#data-model">Data Model</a></li>
+        <li><a href="#integrations">External Integrations</a></li>
+        <li><a href="#decisions">Key Design Decisions</a></li>
+        <li><a href="#security">Security Considerations</a></li>
+        <li><a href="#deployment">Deployment</a></li>
+      </ol>
+    </nav>
+
+    <section id="overview">
+      <h2>System Overview</h2>
+      <p><em>High-level diagram of the system. Use ASCII or link to a Mermaid/diagram file.</em></p>
+      <div class="flow">┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Client     │────▶│   API       │────▶│  Database   │
+│  (Browser)   │     │  (Backend)  │     │             │
+└─────────────┘     └──────┬──────┘     └─────────────┘
+                           │
+                           ▼
+                    ┌─────────────┐
+                    │  External   │
+                    │  Services   │
+                    └─────────────┘</div>
+    </section>
+
+    <section id="stack">
+      <h2>Stack</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Technology</th>
+            <th>Version</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Backend</td>
+            <td><em>e.g. FastAPI</em></td>
+            <td><em>0.110</em></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td><em>e.g. React</em></td>
+            <td><em>18.3</em></td>
+            <td><em>TypeScript</em></td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td><em>e.g. PostgreSQL</em></td>
+            <td><em>16</em></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Cache</td>
+            <td><em>e.g. Redis</em></td>
+            <td><em>7</em></td>
+            <td><em>Optional</em></td>
+          </tr>
+          <tr>
+            <td>Message Queue</td>
+            <td><em>e.g. RabbitMQ</em></td>
+            <td></td>
+            <td><em>If applicable</em></td>
+          </tr>
+          <tr>
+            <td>Container</td>
+            <td>Docker</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>CI/CD</td>
+            <td>GitHub Actions</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="structure">
+      <h2>Project Structure</h2>
+      <pre>project/
+├── src/
+│   ├── api/            # HTTP layer (routes, controllers, middleware)
+│   ├── services/       # Business logic and use case orchestration
+│   ├── models/         # Domain entities, schemas, types
+│   ├── repositories/   # Data access (DB queries, external API clients)
+│   ├── shared/         # Cross-cutting utilities
+│   └── config/         # Settings, environment, constants
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── docs/               # This folder
+├── Dockerfile
+└── README.md</pre>
+    </section>
+
+    <section id="layers">
+      <h2>Layer Separation</h2>
+
+      <h3>Rules</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Responsibility</th>
+            <th>Can import from</th>
+            <th>Cannot import from</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Presentation</td>
+            <td>HTTP in/out, request parsing</td>
+            <td>Application, Shared</td>
+            <td>Domain, Infrastructure</td>
+          </tr>
+          <tr>
+            <td>Application</td>
+            <td>Use case orchestration, business flow</td>
+            <td>Domain, Infrastructure</td>
+            <td>Presentation</td>
+          </tr>
+          <tr>
+            <td>Domain</td>
+            <td>Core entities and business rules</td>
+            <td>Nothing (self-contained)</td>
+            <td>Any other layer</td>
+          </tr>
+          <tr>
+            <td>Infrastructure</td>
+            <td>DB, external APIs, file system</td>
+            <td>Domain, Shared</td>
+            <td>Presentation, Application</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Dependency Direction</h3>
+      <div class="flow">Presentation → Application → Domain ← Infrastructure
+     │                                      │
+     └──────── both use Shared ─────────────┘</div>
+    </section>
+
+    <section id="data-model">
+      <h2>Data Model</h2>
+      <p><em>List the main entities and their relationships.</em></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Entity</th>
+            <th>Description</th>
+            <th>Key fields</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. User</em></td>
+            <td><em>System user with authentication</em></td>
+            <td><em>id, email, role</em></td>
+          </tr>
+          <tr>
+            <td><em>e.g. Order</em></td>
+            <td><em>Purchase order submitted by user</em></td>
+            <td><em>id, user_id, status</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="integrations">
+      <h2>External Integrations</h2>
+      <p><em>APIs, services, or systems this project communicates with.</em></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Purpose</th>
+            <th>Auth method</th>
+            <th>Docs link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. Stripe</em></td>
+            <td><em>Payment processing</em></td>
+            <td><em>API key</em></td>
+            <td><em>https://...</em></td>
+          </tr>
+          <tr>
+            <td><em>e.g. SendGrid</em></td>
+            <td><em>Email delivery</em></td>
+            <td><em>API key</em></td>
+            <td><em>https://...</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="decisions">
+      <h2>Key Design Decisions</h2>
+      <p><em>Record important architectural choices and why they were made. This helps future developers understand the "why" behind the system.</em></p>
+
+      <details>
+        <summary>ADR-001 — <em>Decision title</em></summary>
+        <ul>
+          <li><strong>Date:</strong> <em>YYYY-MM-DD</em></li>
+          <li><strong>Context:</strong> <em>What situation required a decision?</em></li>
+          <li><strong>Decision:</strong> <em>What was decided?</em></li>
+          <li><strong>Reason:</strong> <em>Why this option over alternatives?</em></li>
+          <li><strong>Consequences:</strong> <em>What trade-offs come with this decision?</em></li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>ADR-002 — <em>Decision title</em></summary>
+        <ul>
+          <li><strong>Date:</strong> <em>YYYY-MM-DD</em></li>
+          <li><strong>Context:</strong> <em>...</em></li>
+          <li><strong>Decision:</strong> <em>...</em></li>
+          <li><strong>Reason:</strong> <em>...</em></li>
+          <li><strong>Consequences:</strong> <em>...</em></li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="security">
+      <h2>Security Considerations</h2>
+      <ul>
+        <li><em>e.g. All endpoints require JWT authentication except /health</em></li>
+        <li><em>e.g. Secrets managed via GitHub Secrets / environment variables</em></li>
+        <li><em>e.g. Database connections use TLS</em></li>
+        <li><em>e.g. User input validated at API boundary before reaching services</em></li>
+      </ul>
+    </section>
+
+    <section id="deployment">
+      <h2>Deployment</h2>
+      <p><em>How the project is deployed.</em></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Environment</th>
+            <th>URL / Host</th>
+            <th>Branch</th>
+            <th>Auto-deploy?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Development</td>
+            <td><em>localhost:8000</em></td>
+            <td><em>any</em></td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Staging</td>
+            <td><em>staging.nz...</em></td>
+            <td><em>main</em></td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Production</td>
+            <td><em>api.nz...</em></td>
+            <td><em>tags</em></td>
+            <td>Manual</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      <p>NetZero Engineering · Docs Template · Customize for each project</p>
+    </footer>
+  </div>
+</body>
+</html>
