@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Roadmap (Template)</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+      --green: #3fb950; --red: #f85149; --orange: #d29922;
+      --purple: #bc8cff; --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    .badge { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.8rem; color: var(--accent); margin: 0.3rem 0.15rem; }
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    p { margin-bottom: 0.8rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    @media print { body { background: #fff; color: #222; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NetZero — Roadmap (Template)</h1>
+      <p>High-level view of what's happening, what's next, and what we're deliberately not doing</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge">template</span>
+        <span class="badge">per-project</span>
+      </div>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">
+        <strong>Last updated:</strong> <em>YYYY-MM-DD</em>
+      </p>
+    </header>
+
+    <nav>
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#now">Now (current sprint/iteration)</a></li>
+        <li><a href="#next">Next (upcoming sprint)</a></li>
+        <li><a href="#later">Later (planned but not scheduled)</a></li>
+        <li><a href="#blockers">Blockers</a></li>
+        <li><a href="#out-of-scope">Out of Scope</a></li>
+        <li><a href="#completed">Completed</a></li>
+      </ol>
+    </nav>
+
+    <section id="now">
+      <h2>Now (current sprint/iteration)</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">What the team is actively working on right now.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Owner</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. User authentication</em></td>
+            <td><em>@developer</em></td>
+            <td><em>In progress</em></td>
+          </tr>
+          <tr>
+            <td><em>e.g. API error handling</em></td>
+            <td><em>@developer</em></td>
+            <td><em>In review</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="next">
+      <h2>Next (upcoming sprint)</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">What's been prioritized and is ready to start.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Owner</th>
+            <th>Depends on</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. Dashboard charts</em></td>
+            <td><em>TBD</em></td>
+            <td><em>API endpoints</em></td>
+          </tr>
+          <tr>
+            <td><em>e.g. Email notifications</em></td>
+            <td><em>TBD</em></td>
+            <td><em>User auth</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="later">
+      <h2>Later (planned but not scheduled)</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Important work that's been identified but not yet prioritized.</p>
+      <ul>
+        <li><em>e.g. Performance optimization for large datasets</em></li>
+        <li><em>e.g. Multi-language support</em></li>
+        <li><em>e.g. Audit logging</em></li>
+      </ul>
+    </section>
+
+    <section id="blockers">
+      <h2>Blockers</h2>
+      <div class="callout callout-warn">
+        <strong>Active blockers</strong> that are preventing or slowing progress.
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Blocker</th>
+            <th>Impact</th>
+            <th>Action needed</th>
+            <th>Owner</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. Missing API docs</em></td>
+            <td><em>Blocks FE</em></td>
+            <td><em>Reach out to X</em></td>
+            <td><em>@developer</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="out-of-scope">
+      <h2>Out of Scope</h2>
+      <div class="callout callout-info">
+        Things that are explicitly <strong>NOT</strong> part of this project/phase. This prevents scope creep and sets expectations.
+      </div>
+      <ul>
+        <li><em>e.g. Mobile app — will be a separate project</em></li>
+        <li><em>e.g. Legacy data migration — handled by Data team</em></li>
+        <li><em>e.g. Custom reporting — deferred to Q3</em></li>
+      </ul>
+    </section>
+
+    <section id="completed">
+      <h2>Completed</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">Move items here when done. Keeps a record of progress.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Completed</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>e.g. Project scaffolding</em></td>
+            <td><em>2025-01-15</em></td>
+            <td><em>Template used</em></td>
+          </tr>
+          <tr>
+            <td><em>e.g. CI/CD pipeline</em></td>
+            <td><em>2025-01-20</em></td>
+            <td><em>All stacks</em></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      NetZero Engineering · Docs Template · Customize for each project
+    </footer>
+  </div>
+</body>
+</html>
