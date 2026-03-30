@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Implementation Guide: From Zero to CI/CD</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --purple: #bc8cff;
+      --cyan: #39d353;
+      --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px;
+    }
+    .container { max-width: 980px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    .badge { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.8rem; color: var(--accent); margin: 0.3rem 0.15rem; }
+
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--purple); }
+    p { margin-bottom: 0.8rem; }
+
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.8rem 0 1.2rem; font-size: 0.88rem; line-height: 1.5; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-size: 0.88rem; }
+    p code, li code, td code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.4rem; }
+
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout-bad  { background: rgba(248,81,73,0.08); border-color: var(--red); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 0.8rem 0; padding: 0.8rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    details[open] summary { margin-bottom: 0.6rem; }
+
+    /* Phase timeline */
+    .phase { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.2rem 0; position: relative; }
+    .phase-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+    .phase-number { background: var(--accent); color: var(--bg); font-weight: 700; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+    .phase-title { font-size: 1.15rem; font-weight: 600; }
+    .phase-duration { color: var(--text-muted); font-size: 0.85rem; margin-left: auto; }
+    .phase-done .phase-number { background: var(--green); }
+    .phase ul { margin-top: 0.5rem; }
+
+    /* Dependency arrows */
+    .dep-arrow { text-align: center; color: var(--green); font-size: 1.5rem; margin: 0.3rem 0; }
+
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+
+    @media print {
+      body { background: #fff; color: #222; }
+      pre { border-color: #ccc; }
+      .phase { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Implementation Guide</h1>
+  <p>Step-by-step roadmap to adopt development best practices across NetZero</p>
+  <div style="margin-top: 1rem;">
+    <span class="badge">Python</span>
+    <span class="badge">JS / TS</span>
+    <span class="badge">React</span>
+    <span class="badge">TLPP</span>
+    <span class="badge">Node-RED</span>
+    <span class="badge">GitHub Actions</span>
+  </div>
+</header>
+
+<nav>
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Overview &amp; Prerequisites</a></li>
+    <li><a href="#phase1">Phase 1 — GitHub Organization Setup</a></li>
+    <li><a href="#phase2">Phase 2 — Branch Protection &amp; PR Workflow</a></li>
+    <li><a href="#phase3">Phase 3 — Project Structure Standards</a></li>
+    <li><a href="#phase4">Phase 4 — CI Pipelines (GitHub Actions)</a></li>
+    <li><a href="#phase5">Phase 5 — Repository Templates</a></li>
+    <li><a href="#phase6">Phase 6 — Testing &amp; Quality Gates</a></li>
+    <li><a href="#phase7">Phase 7 — Team Onboarding &amp; Adoption</a></li>
+    <li><a href="#tlpp-deep-dive">Appendix A — TLPP Project Architecture (Deep Dive)</a></li>
+    <li><a href="#actions-catalog">Appendix B — Complete GitHub Actions Catalog</a></li>
+    <li><a href="#migration-checklist">Appendix C — Existing Repo Migration Checklist</a></li>
+  </ol>
+</nav>
+
+
+<!-- ============================================================ -->
+<!-- OVERVIEW -->
+<!-- ============================================================ -->
+<section id="overview">
+<h2>1. Overview &amp; Prerequisites</h2>
+
+<h3>What we are building</h3>
+<p>A standardized development workflow where every repository — regardless of stack — shares the same branching strategy, commit convention, code review process, and automated quality gates. The goal: any developer can switch between projects and immediately know how things work.</p>
+
+<h3>Current state vs. target state</h3>
+<table>
+  <tr><th>Today</th><th>Target</th></tr>
+  <tr><td>No consistent branching strategy</td><td>GitHub Flow on all repos</td></tr>
+  <tr><td>Direct pushes to <code>main</code></td><td>PRs required, with review + CI checks</td></tr>
+  <tr><td>No standard project structure</td><td>Layered architecture per stack, enforced by templates</td></tr>
+  <tr><td>No automated testing or linting</td><td>CI pipeline blocks merge if quality gates fail</td></tr>
+  <tr><td>Ad-hoc code review (or none)</td><td>Mandatory review with checklist</td></tr>
+  <tr><td>New repos created from scratch</td><td>Template repos with pre-configured CI, structure, and docs</td></tr>
+</table>
+
+<h3>Prerequisites</h3>
+<ul>
+  <li>GitHub Organization (<code>netzero-hq</code>) with at least a Team plan for branch protection rules</li>
+  <li>Admin access to the organization for the person executing this guide</li>
+  <li>Buy-in from all tech leads (present the <a href="dev-best-practices.html">Best Practices document</a> first)</li>
+  <li>A pilot repository for each stack to test the setup before rolling out</li>
+</ul>
+
+<div class="callout callout-info">
+  <strong>Estimated total effort</strong>
+  For one person dedicated to this: approximately 3–4 weeks to set up everything. For a team splitting the work: 2 weeks. The phased approach means value is delivered incrementally — you don't need to finish everything before teams start benefiting.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 1 -->
+<!-- ============================================================ -->
+<section id="phase1">
+<h2>2. Phase 1 — GitHub Organization Setup</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">1</div>
+    <div class="phase-title">Configure the GitHub Organization</div>
+    <div class="phase-duration">~1 day</div>
+  </div>
+
+  <h4>Step 1.1 — Organization settings</h4>
+  <ol>
+    <li>Go to <code>github.com/orgs/netzero-hq/settings</code></li>
+    <li>Set <strong>Default repository permission</strong> to <code>Read</code> (least privilege)</li>
+    <li>Enable <strong>Two-factor authentication requirement</strong> for all members</li>
+    <li>Under <strong>Member privileges</strong>, disable "Allow members to create public repositories"</li>
+    <li>Set default branch name to <code>main</code></li>
+  </ol>
+
+  <h4>Step 1.2 — Create teams</h4>
+  <p>Create GitHub teams that map to your actual squads. This simplifies permissions and code review assignments.</p>
+  <pre><code># Suggested team structure
+netzero-hq/
+├── @netzero-hq/backend        # Python developers
+├── @netzero-hq/frontend       # JS/TS/React developers
+├── @netzero-hq/protheus       # TLPP/TOTVS developers
+├── @netzero-hq/nodered        # Node-RED developers
+├── @netzero-hq/devops         # CI/CD, infra, Docker
+└── @netzero-hq/tech-leads     # Cross-stack reviewers</code></pre>
+
+  <h4>Step 1.3 — Repository naming convention</h4>
+  <table>
+    <tr><th>Pattern</th><th>Example</th><th>Description</th></tr>
+    <tr><td><code>svc-{name}</code></td><td><code>svc-carbon-api</code></td><td>Backend service</td></tr>
+    <tr><td><code>app-{name}</code></td><td><code>app-dashboard</code></td><td>Frontend application</td></tr>
+    <tr><td><code>lib-{name}</code></td><td><code>lib-auth-utils</code></td><td>Shared library</td></tr>
+    <tr><td><code>proto-{name}</code></td><td><code>proto-purchase-api</code></td><td>TLPP/Protheus project</td></tr>
+    <tr><td><code>flow-{name}</code></td><td><code>flow-sensor-ingest</code></td><td>Node-RED project</td></tr>
+    <tr><td><code>infra-{name}</code></td><td><code>infra-k8s-manifests</code></td><td>Infrastructure config</td></tr>
+    <tr><td><code>tpl-{stack}</code></td><td><code>tpl-python</code></td><td>Template repository</td></tr>
+  </table>
+</div>
+
+<div class="callout callout-good">
+  <strong>Deliverable</strong>
+  GitHub org configured, teams created, naming convention documented. No code changes needed yet.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 2 -->
+<!-- ============================================================ -->
+<section id="phase2">
+<h2>3. Phase 2 — Branch Protection &amp; PR Workflow</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">2</div>
+    <div class="phase-title">Lock down <code>main</code> and establish PR flow</div>
+    <div class="phase-duration">~1 day</div>
+  </div>
+
+  <h4>Step 2.1 — Create branch protection rule</h4>
+  <p>Apply this to the <code>main</code> branch of every repository.</p>
+  <p>Go to <code>Settings → Branches → Add branch protection rule</code>:</p>
+
+  <table>
+    <tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Branch name pattern</td><td><code>main</code></td></tr>
+    <tr><td>Require a pull request before merging</td><td>Yes</td></tr>
+    <tr><td>Required number of approvals</td><td><code>1</code></td></tr>
+    <tr><td>Dismiss stale pull request approvals</td><td>Yes</td></tr>
+    <tr><td>Require status checks to pass</td><td>Yes (add CI jobs after Phase 4)</td></tr>
+    <tr><td>Require branches to be up to date</td><td>Yes</td></tr>
+    <tr><td>Require linear history</td><td>Yes</td></tr>
+    <tr><td>Include administrators</td><td>Yes (no one bypasses the rules)</td></tr>
+    <tr><td>Allow force pushes</td><td>No</td></tr>
+    <tr><td>Allow deletions</td><td>No</td></tr>
+  </table>
+
+  <h4>Step 2.2 — Create the PR template</h4>
+  <p>Create this file in every repository (or in the template repos to inherit):</p>
+  <pre><code># .github/PULL_REQUEST_TEMPLATE.md
+
+## What does this PR do?
+&lt;!-- Describe the change in 1–3 sentences --&gt;
+
+## Type of change
+- [ ] feat — new feature
+- [ ] fix — bug fix
+- [ ] refactor — code improvement
+- [ ] chore — tooling / deps
+- [ ] docs — documentation
+- [ ] test — tests only
+
+## How was this tested?
+&lt;!-- Describe the tests you ran and the environment --&gt;
+
+## Checklist
+- [ ] Code follows the layer separation guidelines
+- [ ] No business logic in controllers / endpoints
+- [ ] No hardcoded secrets or credentials
+- [ ] Tests added or updated
+- [ ] Linter passes with no warnings
+- [ ] Self-reviewed my own code
+- [ ] No console.log / conout() / print() left behind</code></pre>
+
+  <h4>Step 2.3 — Configure CODEOWNERS</h4>
+  <p>Auto-assign reviewers based on file paths:</p>
+  <pre><code># .github/CODEOWNERS
+
+# Default reviewers for everything
+*                       @netzero-hq/tech-leads
+
+# Stack-specific ownership
+*.py                    @netzero-hq/backend
+*.ts *.tsx *.js *.jsx   @netzero-hq/frontend
+*.tlpp                  @netzero-hq/protheus
+flows/*.json            @netzero-hq/nodered
+Dockerfile              @netzero-hq/devops
+.github/                @netzero-hq/devops</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <strong>Important</strong>
+  Enable "Require review from Code Owners" in the branch protection rule. This ensures the right people review code in their area.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 3 -->
+<!-- ============================================================ -->
+<section id="phase3">
+<h2>4. Phase 3 — Project Structure Standards</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">3</div>
+    <div class="phase-title">Define the standard folder layout for each stack</div>
+    <div class="phase-duration">~2 days</div>
+  </div>
+
+  <p>Every project follows a layered architecture. The layer names adapt to each stack, but the principle is universal: <strong>each file has one responsibility, dependencies flow inward, and no layer skips another.</strong></p>
+
+  <h3>Python (FastAPI / Flask)</h3>
+  <pre><code>svc-{name}/
+├── src/
+│   ├── api/               # Routes / controllers (Presentation)
+│   │   ├── routes/
+│   │   └── middleware/
+│   ├── services/          # Use cases, orchestration (Application)
+│   ├── models/            # Domain entities (Domain)
+│   │   ├── schemas/       # Pydantic / serialization
+│   │   └── entities/      # Core domain objects
+│   ├── repositories/      # Data access (Infrastructure)
+│   └── config/            # Settings, env vars
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── conftest.py
+├── pyproject.toml
+├── Dockerfile
+└── README.md</code></pre>
+
+  <h3>JS / TS — React Frontend</h3>
+  <pre><code>app-{name}/
+├── src/
+│   ├── components/        # UI components (Presentation)
+│   │   ├── common/        # Shared / reusable
+│   │   └── features/      # Feature-specific
+│   ├── hooks/             # Custom React hooks
+│   ├── services/          # API calls, business logic (Application)
+│   ├── models/            # Types, interfaces (Domain)
+│   ├── utils/             # Helpers, formatters
+│   └── config/            # Env, constants
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── package.json
+├── tsconfig.json
+├── Dockerfile
+└── README.md</code></pre>
+
+  <h3>TLPP / Protheus</h3>
+  <p>TLPP projects are organized by <strong>business domain</strong>. Each domain folder is self-contained with its own layers following the endpoint → service → validation → mapping → query pattern.</p>
+
+  <pre><code>proto-{name}/
+├── src/
+│   ├── purchase-request/
+│   │   ├── endpoint.tlpp      # REST entrypoint — receives HTTP, calls service, returns response
+│   │   ├── service.tlpp       # Orchestrates the use case (calls validation, mapping, ExecAuto)
+│   │   ├── validation.tlpp    # Payload validation + business rules (field checks, status, etc.)
+│   │   ├── mapping.tlpp       # SC1 / MATA110 field mapping — translates JSON ↔ Protheus fields
+│   │   └── query.tlpp         # Complex reads only (embedded SQL, multi-table joins)
+│   │
+│   ├── purchase-order/
+│   │   ├── endpoint.tlpp
+│   │   ├── service.tlpp
+│   │   ├── validation.tlpp
+│   │   ├── mapping.tlpp       # SC7 / MATA120 field mapping
+│   │   └── query.tlpp
+│   │
+│   ├── input-document/
+│   │   ├── endpoint.tlpp
+│   │   ├── service.tlpp
+│   │   ├── validation.tlpp
+│   │   ├── mapping.tlpp       # SF1 / SD1 / MATA103 field mapping
+│   │   └── query.tlpp
+│   │
+│   └── shared/                # Cross-domain reusable code
+│       ├── rest/
+│       │   ├── response.tlpp  # Standard JSON response builder (200, 400, 500)
+│       │   └── error.tlpp     # Error codes and messages catalog
+│       ├── protheus/
+│       │   ├── dates.tlpp     # Date format conversions (ISO ↔ Protheus YYYYMMDD)
+│       │   ├── environment.tlpp  # PREPARE/OpenEnv/company/branch setup
+│       │   ├── logging.tlpp   # Structured logging (ConOut with context)
+│       │   └── execauto.tlpp  # ExecAuto wrapper with error handling
+│       └── utils/
+│           └── strings.tlpp   # String helpers (trim, pad, encode)
+│
+├── includes/                  # TLPP/TOTVS standard headers (.ch / .th)
+├── payloads/                  # Sample request JSONs for manual + automated testing
+│   ├── purchase-request/
+│   │   ├── valid-create.json
+│   │   ├── valid-update.json
+│   │   └── invalid-missing-fields.json
+│   └── purchase-order/
+│       └── valid-create.json
+├── tests/
+│   ├── assets/                # Static test data, mock responses
+│   └── integration/           # REST integration tests (hit AppServer endpoints)
+├── patchs/                    # Generated RPO patch artifacts for deployment
+├── docs/
+│   ├── api-reference.md       # Endpoint documentation
+│   └── field-mappings.md      # Table/field mapping reference
+└── README.md</code></pre>
+
+  <div class="callout callout-info">
+    <strong>TLPP layer rules</strong>
+    <ul>
+      <li><code>endpoint.tlpp</code> — Only handles HTTP concerns: reads the request, calls <code>service</code>, writes the response. Zero business logic here.</li>
+      <li><code>service.tlpp</code> — Orchestrates the flow: calls validation, builds the mapping, calls ExecAuto or query. This is where the use case lives.</li>
+      <li><code>validation.tlpp</code> — All input checks (required fields, type coercion, business rules like "status must be active"). Returns structured errors.</li>
+      <li><code>mapping.tlpp</code> — The only place that knows about Protheus table/field names (SC1, SC7, SF1, etc.). Translates between JSON keys and Protheus field aliases.</li>
+      <li><code>query.tlpp</code> — Only exists when reads are complex (multi-table joins, aggregations). Simple reads stay in the service.</li>
+    </ul>
+  </div>
+
+  <h3>Node-RED</h3>
+  <pre><code>flow-{name}/
+├── flows/                 # Exported flow JSON files
+│   ├── main-flow.json
+│   └── subflows/          # Reusable subflow definitions
+├── custom-nodes/          # Custom node implementations
+│   ├── src/
+│   └── test/
+├── config/                # Environment-specific configs
+│   ├── dev.json
+│   └── prod.json
+├── docs/                  # Flow diagrams, descriptions
+├── package.json
+└── README.md</code></pre>
+
+  <h3>Universal clean code rules (all stacks)</h3>
+  <ol>
+    <li><strong>No business logic in the entry layer.</strong> Controllers (Python), route handlers (JS), endpoints (TLPP) — they receive, delegate, respond.</li>
+    <li><strong>No database access outside the data layer.</strong> Services never write raw SQL or call ORM directly.</li>
+    <li><strong>One file = one responsibility.</strong> If you need "and" to describe what a file does, split it.</li>
+    <li><strong>Shared code belongs in <code>shared/</code> or <code>utils/</code>.</strong> Never copy-paste between features.</li>
+    <li><strong>Configuration lives in environment variables.</strong> Use <code>.env</code> locally, GitHub secrets in CI, Protheus INI in TLPP.</li>
+    <li><strong>All public functions and endpoints must have documentation.</strong> Docstrings (Python), JSDoc (JS/TS), comments (TLPP).</li>
+    <li><strong>Dependencies flow inward.</strong> Domain never imports infrastructure. Mapping never imports endpoint.</li>
+  </ol>
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 4 -->
+<!-- ============================================================ -->
+<section id="phase4">
+<h2>5. Phase 4 — CI Pipelines (GitHub Actions)</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">4</div>
+    <div class="phase-title">Automate quality gates on every PR</div>
+    <div class="phase-duration">~3 days</div>
+  </div>
+
+  <p>Every pull request must pass automated checks before it can be merged. This is non-negotiable — it removes the human factor from quality enforcement.</p>
+
+  <h4>Step 4.1 — Create the universal PR validator</h4>
+  <p>This goes in every repo and validates PR title (Conventional Commits) and description.</p>
+  <pre><code># .github/workflows/pr-validation.yml
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  validate-title:
+    name: Conventional Commit Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            refactor
+            chore
+            docs
+            test
+            style
+            perf
+          requireScope: false
+          subjectPattern: ^[a-z].+$
+          subjectPatternError: |
+            PR title "{subject}" must start with lowercase.
+            Example: "feat(auth): add JWT refresh rotation"
+
+  validate-body:
+    name: PR Description Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            if (body.trim().length < 30) {
+              core.setFailed('PR description is too short. Please fill the template.');
+            }
+            const checklistItems = (body.match(/- \[[ x]\]/g) || []);
+            const checkedItems = (body.match(/- \[x\]/gi) || []);
+            if (checklistItems.length > 0 && checkedItems.length === 0) {
+              core.setFailed('Please check at least one item in the checklist.');
+            }</code></pre>
+
+  <h4>Step 4.2 — Python CI</h4>
+  <pre><code># .github/workflows/python-ci.yml
+name: Python CI
+
+on:
+  pull_request:
+    paths: ['**.py', 'pyproject.toml', 'requirements*.txt']
+
+jobs:
+  quality:
+    name: Lint + Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install ruff mypy
+      - name: Ruff lint
+        run: ruff check src/ --output-format=github
+      - name: Ruff format check
+        run: ruff format --check src/
+      - name: mypy type check
+        run: mypy src/ --ignore-missing-imports
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt && pip install pytest pytest-cov
+      - name: Run tests with coverage
+        run: pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=70
+
+  architecture:
+    name: Layer Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify no DB imports in API layer
+        run: |
+          VIOLATIONS=""
+          if grep -rn "import.*sqlalchemy\|from.*repositories.*import" src/api/ 2>/dev/null; then
+            VIOLATIONS="API layer imports from repositories/DB"
+          fi
+          if grep -rn "from.*api.*import" src/models/ 2>/dev/null; then
+            VIOLATIONS="$VIOLATIONS | Domain layer imports from API"
+          fi
+          if [ -n "$VIOLATIONS" ]; then
+            echo "::error::Layer violations found: $VIOLATIONS"
+            exit 1
+          fi
+          echo "✓ No layer violations."</code></pre>
+
+  <h4>Step 4.3 — JS/TS CI</h4>
+  <pre><code># .github/workflows/js-ci.yml
+name: JS/TS CI
+
+on:
+  pull_request:
+    paths: ['**.js', '**.ts', '**.tsx', '**.jsx', 'package.json']
+
+jobs:
+  quality:
+    name: Lint + Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: ESLint
+        run: npx eslint src/ --max-warnings=0
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Jest with coverage
+        run: npx jest --coverage --coverageThreshold='{"global":{"branches":60,"functions":70,"lines":70}}'
+
+  architecture:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No console.log in production
+        run: |
+          if grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v "// allowed" | grep -v ".test.\|.spec."; then
+            echo "::error::Remove console.log from production code."
+            exit 1
+          fi
+      - name: No direct API calls in components
+        run: |
+          if grep -rn "fetch(\|axios\.\|\.get(\|\.post(" src/components/ --include="*.tsx" --include="*.jsx" 2>/dev/null | grep -v ".test.\|.spec."; then
+            echo "::error::Components must not make direct API calls. Use services/ or hooks/."
+            exit 1
+          fi</code></pre>
+
+  <h4>Step 4.4 — TLPP CI</h4>
+  <p>TLPP doesn't have a standard linter or test runner in CI, but we can still enforce structural rules and validate payloads.</p>
+  <pre><code># .github/workflows/tlpp-ci.yml
+name: TLPP CI
+
+on:
+  pull_request:
+    paths: ['**.tlpp', 'payloads/**', 'docs/**']
+
+jobs:
+  structure-check:
+    name: Project Structure Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate domain folder structure
+        run: |
+          echo "Checking TLPP domain folders..."
+          ERRORS=""
+
+          for domain_dir in src/*/; do
+            domain=$(basename "$domain_dir")
+
+            # Skip shared folder
+            if [ "$domain" = "shared" ]; then continue; fi
+
+            # Each domain must have at least endpoint.tlpp and service.tlpp
+            if [ ! -f "$domain_dir/endpoint.tlpp" ]; then
+              ERRORS="$ERRORS\nMissing: $domain_dir/endpoint.tlpp"
+            fi
+            if [ ! -f "$domain_dir/service.tlpp" ]; then
+              ERRORS="$ERRORS\nMissing: $domain_dir/service.tlpp"
+            fi
+          done
+
+          if [ -n "$ERRORS" ]; then
+            echo -e "::error::Structure violations found:$ERRORS"
+            exit 1
+          fi
+          echo "✓ All domain folders have required files."
+
+      - name: Check for hardcoded credentials
+        run: |
+          if grep -rni "cPassword\s*:=\s*['\"].\+['\"]\|cToken\s*:=\s*['\"].\+['\"]" src/ 2>/dev/null; then
+            echo "::error::Hardcoded credentials detected in TLPP source."
+            exit 1
+          fi
+          echo "✓ No hardcoded credentials."
+
+      - name: Check endpoint files have no business logic
+        run: |
+          # Endpoint files should NOT contain DbSelectArea, RecLock, MsExecAuto
+          if grep -rn "DbSelectArea\|RecLock\|MsExecAuto\|MATA1[0-9][0-9]" src/*/endpoint.tlpp 2>/dev/null; then
+            echo "::error::endpoint.tlpp must not contain DB operations or ExecAuto calls. Move to service.tlpp."
+            exit 1
+          fi
+          echo "✓ Endpoint files are clean."
+
+  payload-validation:
+    name: Validate JSON Payloads
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate all JSON files
+        run: |
+          ERRORS=0
+          for f in $(find payloads/ -name '*.json' 2>/dev/null); do
+            if ! python3 -m json.tool "$f" > /dev/null 2>&1; then
+              echo "::error file=$f::Invalid JSON: $f"
+              ERRORS=$((ERRORS+1))
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then exit 1; fi
+          echo "✓ All payload JSONs are valid."
+
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check README exists and is not empty
+        run: |
+          if [ ! -s README.md ]; then
+            echo "::error::README.md is missing or empty."
+            exit 1
+          fi
+          echo "✓ README.md exists."</code></pre>
+
+  <h4>Step 4.5 — Docker validation (all repos with Dockerfile)</h4>
+  <pre><code># .github/workflows/docker-ci.yml
+name: Docker Validation
+
+on:
+  pull_request:
+    paths: ['Dockerfile', 'docker-compose*.yml', '.dockerignore']
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+      - name: Build image (no push)
+        run: docker build -t test:pr-${{ github.event.number }} .</code></pre>
+
+  <h4>Step 4.6 — Auto-label PRs</h4>
+  <pre><code># .github/workflows/auto-label.yml
+name: Auto Label PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}</code></pre>
+  <pre><code># .github/labeler.yml
+python:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.py'
+javascript:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.{js,ts,tsx,jsx}'
+tlpp:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.tlpp'
+nodered:
+  - changed-files:
+    - any-glob-to-any-file: 'flows/**'
+docker:
+  - changed-files:
+    - any-glob-to-any-file: 'Dockerfile*'
+docs:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+ci:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'</code></pre>
+
+  <h4>Step 4.7 — Wire CI checks into branch protection</h4>
+  <p>After the first PR triggers the workflows, go back to branch protection settings and add the job names as required status checks:</p>
+  <ul>
+    <li><code>Conventional Commit Title</code></li>
+    <li><code>PR Description Check</code></li>
+    <li><code>Lint + Type Check</code> (or <code>Project Structure Validation</code> for TLPP)</li>
+    <li><code>Tests</code> (where applicable)</li>
+  </ul>
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 5 -->
+<!-- ============================================================ -->
+<section id="phase5">
+<h2>6. Phase 5 — Repository Templates</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">5</div>
+    <div class="phase-title">Create one template repo per stack</div>
+    <div class="phase-duration">~2 days</div>
+  </div>
+
+  <h4>Step 5.1 — Create template repositories</h4>
+  <p>Create these repos, populate them with the structure from Phase 3 + workflows from Phase 4, then mark them as templates:</p>
+  <table>
+    <tr><th>Repo</th><th>Contains</th></tr>
+    <tr><td><code>tpl-python</code></td><td>Python structure + <code>python-ci.yml</code> + <code>pr-validation.yml</code> + <code>docker-ci.yml</code></td></tr>
+    <tr><td><code>tpl-react</code></td><td>React/TS structure + <code>js-ci.yml</code> + <code>pr-validation.yml</code> + <code>docker-ci.yml</code></td></tr>
+    <tr><td><code>tpl-tlpp</code></td><td>TLPP structure + <code>tlpp-ci.yml</code> + <code>pr-validation.yml</code></td></tr>
+    <tr><td><code>tpl-nodered</code></td><td>Node-RED structure + <code>pr-validation.yml</code></td></tr>
+  </table>
+
+  <p>To mark a repo as a template: <code>Settings → General → check "Template repository"</code></p>
+
+  <h4>Step 5.2 — What goes in every template</h4>
+  <pre><code>tpl-{stack}/
+├── .github/
+│   ├── workflows/
+│   │   ├── pr-validation.yml
+│   │   ├── {stack}-ci.yml
+│   │   ├── docker-ci.yml        # if applicable
+│   │   └── auto-label.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug-report.yml
+│   │   └── feature-request.yml
+│   ├── labeler.yml
+│   └── CODEOWNERS
+├── docs/                        # Project documentation (fill per project)
+│   ├── development-guide.md     # Scope, conventions, PR flow, definition of done
+│   ├── architecture.md          # System overview, stack, layers, ADRs
+│   ├── security.md              # Security rules, secret management, incident response
+│   ├── roadmap.md               # Now / Next / Later / Blockers / Out of scope
+│   └── backlog.md               # Prioritized tasks by epic (ID, criteria, status)
+├── src/                         # Pre-configured layer structure
+├── tests/
+├── .editorconfig
+├── .gitignore                   # Stack-specific
+├── Dockerfile                   # If applicable
+├── README.md                    # Standard sections template
+└── CONTRIBUTING.md              # Links to best practices doc</code></pre>
+
+  <h4>Step 5.3 — Issue templates</h4>
+
+  <details>
+  <summary>Bug Report (<code>.github/ISSUE_TEMPLATE/bug-report.yml</code>)</summary>
+  <pre><code>name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      placeholder: Clear description of what went wrong
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Call endpoint '...'
+        2. With payload '...'
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Low — cosmetic
+        - Medium — partially broken
+        - High — fully broken
+        - Critical — production down
+    validations:
+      required: true
+  - type: dropdown
+    id: stack
+    attributes:
+      label: Stack
+      multiple: true
+      options:
+        - Python
+        - JS/TS / React
+        - TLPP / Protheus
+        - Node-RED
+        - Infrastructure
+    validations:
+      required: true</code></pre>
+  </details>
+
+  <details>
+  <summary>Feature Request (<code>.github/ISSUE_TEMPLATE/feature-request.yml</code>)</summary>
+  <pre><code>name: Feature Request
+description: Suggest a new feature
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or need
+      placeholder: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: stack
+    attributes:
+      label: Affected stack
+      multiple: true
+      options:
+        - Python
+        - JS/TS / React
+        - TLPP / Protheus
+        - Node-RED
+        - Infrastructure
+    validations:
+      required: true</code></pre>
+  </details>
+
+  <h4>Step 5.4 — .editorconfig</h4>
+  <pre><code># .editorconfig
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.py]
+indent_size = 4
+
+[*.tlpp]
+indent_size = 4
+
+[Makefile]
+indent_style = tab</code></pre>
+
+  <h4>Step 5.5 — Using a template</h4>
+  <p>When creating a new repo on GitHub, select "Repository template" and choose the appropriate <code>tpl-*</code>. All files, folders, and workflows are copied into the new repo instantly.</p>
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 6 -->
+<!-- ============================================================ -->
+<section id="phase6">
+<h2>7. Phase 6 — Testing &amp; Quality Gates</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">6</div>
+    <div class="phase-title">Establish minimum testing standards</div>
+    <div class="phase-duration">~3 days</div>
+  </div>
+
+  <h3>Minimum coverage requirements</h3>
+  <table>
+    <tr><th>Stack</th><th>Tool</th><th>Min. Coverage</th><th>Enforced by</th></tr>
+    <tr><td>Python</td><td>pytest + pytest-cov</td><td>70% lines</td><td>CI <code>--cov-fail-under=70</code></td></tr>
+    <tr><td>JS/TS</td><td>Jest</td><td>70% lines, 60% branches</td><td>CI <code>coverageThreshold</code></td></tr>
+    <tr><td>TLPP</td><td>Integration tests via REST</td><td>All endpoints covered</td><td>Manual + CI payload check</td></tr>
+    <tr><td>Node-RED</td><td>node-red-node-test-helper</td><td>Custom nodes covered</td><td>CI npm test</td></tr>
+  </table>
+
+  <h3>What to test (priority order)</h3>
+  <ol>
+    <li><strong>Service / business logic layer</strong> — This is where bugs have the most impact. Unit test every service function.</li>
+    <li><strong>Validation layer</strong> — Test all validation rules with valid and invalid inputs.</li>
+    <li><strong>API contracts</strong> — Integration test that endpoints return correct status codes and response shapes.</li>
+    <li><strong>Edge cases</strong> — Null inputs, empty arrays, boundary values, concurrent access.</li>
+  </ol>
+
+  <h3>TLPP testing strategy</h3>
+  <p>Since TLPP lacks a native unit test framework, we use a two-pronged approach:</p>
+
+  <h4>1. Payload-based contract tests (automated in CI)</h4>
+  <p>Every domain folder in <code>payloads/</code> contains JSON files that represent valid and invalid requests. The CI pipeline validates their structure.</p>
+  <pre><code>payloads/
+├── purchase-request/
+│   ├── valid-create.json        # Must return 200
+│   ├── valid-update.json        # Must return 200
+│   ├── invalid-missing-fields.json  # Must return 400
+│   └── invalid-bad-status.json  # Must return 422
+└── purchase-order/
+    └── valid-create.json</code></pre>
+
+  <h4>2. Integration tests against AppServer (manual or scheduled)</h4>
+  <p>A Python or shell script calls the TLPP REST endpoints with the test payloads and validates the responses:</p>
+  <pre><code># tests/integration/run-tests.sh
+#!/bin/bash
+BASE_URL="${APPSERVER_URL:-http://localhost:8080/rest}"
+
+echo "=== Purchase Request Tests ==="
+
+# Test: valid create
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "$BASE_URL/purchase-request" \
+  -H "Content-Type: application/json" \
+  -d @payloads/purchase-request/valid-create.json)
+
+if [ "$STATUS" -ne 200 ]; then
+  echo "FAIL: valid-create expected 200, got $STATUS"
+  exit 1
+fi
+echo "PASS: valid-create → 200"
+
+# Test: invalid payload
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "$BASE_URL/purchase-request" \
+  -H "Content-Type: application/json" \
+  -d @payloads/purchase-request/invalid-missing-fields.json)
+
+if [ "$STATUS" -ne 400 ]; then
+  echo "FAIL: invalid-missing-fields expected 400, got $STATUS"
+  exit 1
+fi
+echo "PASS: invalid-missing-fields → 400"
+
+echo "=== All tests passed ==="</code></pre>
+
+  <h3>PR acceptance criteria (all stacks)</h3>
+  <p>A PR is only ready to merge when:</p>
+  <ol>
+    <li>All CI checks are green (lint, type check, tests, structure validation)</li>
+    <li>At least 1 reviewer has approved</li>
+    <li>PR description is complete and checklist items are checked</li>
+    <li>No unresolved review comments</li>
+    <li>Branch is up-to-date with <code>main</code></li>
+    <li>New test payloads added for new endpoints (TLPP)</li>
+    <li>Coverage threshold met (Python, JS/TS)</li>
+  </ol>
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- PHASE 7 -->
+<!-- ============================================================ -->
+<section id="phase7">
+<h2>8. Phase 7 — Team Onboarding &amp; Adoption</h2>
+
+<div class="phase">
+  <div class="phase-header">
+    <div class="phase-number">7</div>
+    <div class="phase-title">Roll out to all teams</div>
+    <div class="phase-duration">~1 week</div>
+  </div>
+
+  <h4>Step 7.1 — Pilot with one repo per stack</h4>
+  <p>Pick one active repo for each stack and migrate it to the new standards. This serves as the reference implementation.</p>
+  <table>
+    <tr><th>Stack</th><th>Pilot repo</th><th>Owner</th></tr>
+    <tr><td>Python</td><td><em>(choose an existing service)</em></td><td><em>(tech lead)</em></td></tr>
+    <tr><td>React</td><td><em>(choose an existing app)</em></td><td><em>(tech lead)</em></td></tr>
+    <tr><td>TLPP</td><td><em>(choose an existing integration)</em></td><td><em>(tech lead)</em></td></tr>
+    <tr><td>Node-RED</td><td><em>(choose an existing flow)</em></td><td><em>(tech lead)</em></td></tr>
+  </table>
+
+  <h4>Step 7.2 — Team walkthrough session</h4>
+  <p>Run a 1-hour session covering:</p>
+  <ol>
+    <li>Why we're doing this (5 min) — the problems we're solving</li>
+    <li>The branching model and commit convention (10 min)</li>
+    <li>How to open a PR using the template (10 min — live demo)</li>
+    <li>What happens when CI fails (10 min — show a failing PR and how to fix it)</li>
+    <li>The project structure for their stack (10 min)</li>
+    <li>How to create a new repo from a template (5 min)</li>
+    <li>Q&amp;A (10 min)</li>
+  </ol>
+
+  <h4>Step 7.3 — Progressive rollout</h4>
+  <table>
+    <tr><th>Week</th><th>Action</th></tr>
+    <tr><td>Week 1</td><td>Pilot repos migrated, walkthroughs done, teams start using new flow</td></tr>
+    <tr><td>Week 2</td><td>All new repos must use templates. Existing repos start migration.</td></tr>
+    <tr><td>Week 3</td><td>Branch protection enabled on all remaining repos.</td></tr>
+    <tr><td>Week 4</td><td>Full CI required on all repos. Old patterns no longer accepted.</td></tr>
+  </table>
+
+  <h4>Step 7.4 — Measure and iterate</h4>
+  <p>Track these metrics monthly:</p>
+  <ul>
+    <li><strong>PR merge time</strong> — how long from open to merge? Target: &lt; 24 hours.</li>
+    <li><strong>CI pass rate</strong> — what percentage of PRs pass on first attempt? Target: &gt; 80%.</li>
+    <li><strong>Review turnaround</strong> — time from PR open to first review. Target: &lt; 4 hours.</li>
+    <li><strong>Template adoption</strong> — how many new repos use templates? Target: 100%.</li>
+  </ul>
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- APPENDIX A — TLPP DEEP DIVE -->
+<!-- ============================================================ -->
+<section id="tlpp-deep-dive">
+<h2>Appendix A — TLPP Project Architecture (Deep Dive)</h2>
+
+<h3>Layer dependency diagram</h3>
+<pre><code>
+  ┌──────────────────────────────────────────────────────┐
+  │                   HTTP Request                       │
+  └────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+  ┌──────────────────────────────────────────────────────┐
+  │  endpoint.tlpp                                       │
+  │  ─ Parses JSON body (oJson := JsonObject():fromJson) │
+  │  ─ Calls service function                            │
+  │  ─ Returns standardized response via shared/rest/    │
+  │  ─ NEVER touches DB, ExecAuto, or business rules     │
+  └────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+  ┌──────────────────────────────────────────────────────┐
+  │  service.tlpp                                        │
+  │  ─ Orchestrates the use case flow                    │
+  │  ─ Calls validation.tlpp to validate input           │
+  │  ─ Calls mapping.tlpp to build Protheus arrays       │
+  │  ─ Calls shared/protheus/execauto.tlpp               │
+  │  ─ Calls query.tlpp for complex reads                │
+  │  ─ Returns result to endpoint                        │
+  └──────┬──────────────┬─────────────┬──────────────────┘
+         │              │             │
+         ▼              ▼             ▼
+  ┌─────────────┐ ┌───────────┐ ┌─────────────┐
+  │ validation   │ │ mapping   │ │ query       │
+  │ .tlpp        │ │ .tlpp     │ │ .tlpp       │
+  │              │ │           │ │             │
+  │ ─ Required   │ │ ─ JSON ↔  │ │ ─ Embedded  │
+  │   field      │ │   Protheus│ │   SQL       │
+  │   checks     │ │   field   │ │ ─ Multi-    │
+  │ ─ Type       │ │   mapping │ │   table     │
+  │   coercion   │ │ ─ SC1,SC7,│ │   joins     │
+  │ ─ Business   │ │   SF1,SD1 │ │ ─ Only if   │
+  │   rules      │ │   aliases │ │   reads are │
+  │              │ │           │ │   complex   │
+  └─────────────┘ └───────────┘ └─────────────┘
+         │              │             │
+         └──────────────┴─────────────┘
+                        │
+                        ▼
+  ┌──────────────────────────────────────────────────────┐
+  │  shared/                                             │
+  │  ─ rest/response.tlpp   → Standardized HTTP replies  │
+  │  ─ rest/error.tlpp      → Error code catalog         │
+  │  ─ protheus/execauto    → ExecAuto with error trap   │
+  │  ─ protheus/environment → PREPARE, OpenEnv           │
+  │  ─ protheus/logging     → Structured ConOut logging  │
+  │  ─ protheus/dates       → ISO ↔ YYYYMMDD conversion │
+  │  ─ utils/strings        → Trim, pad, encode helpers  │
+  └──────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Key conventions for TLPP</h3>
+
+<h4>File naming</h4>
+<p>Every domain folder uses exactly these file names. No variations.</p>
+<table>
+  <tr><th>File</th><th>Responsibility</th><th>Imports from</th><th>Never imports</th></tr>
+  <tr><td><code>endpoint.tlpp</code></td><td>HTTP in/out</td><td><code>service</code>, <code>shared/rest</code></td><td><code>mapping</code>, <code>query</code>, DB functions</td></tr>
+  <tr><td><code>service.tlpp</code></td><td>Use case orchestration</td><td><code>validation</code>, <code>mapping</code>, <code>query</code>, <code>shared/*</code></td><td>HTTP parsing functions</td></tr>
+  <tr><td><code>validation.tlpp</code></td><td>Input + business checks</td><td><code>shared/utils</code></td><td><code>mapping</code>, <code>query</code>, DB functions</td></tr>
+  <tr><td><code>mapping.tlpp</code></td><td>JSON ↔ Protheus fields</td><td><code>shared/protheus/dates</code></td><td><code>service</code>, <code>endpoint</code></td></tr>
+  <tr><td><code>query.tlpp</code></td><td>Complex reads</td><td><code>shared/protheus/environment</code></td><td><code>endpoint</code>, <code>service</code></td></tr>
+</table>
+
+<h4>Standard response format</h4>
+<p>All TLPP endpoints must return this JSON shape (defined in <code>shared/rest/response.tlpp</code>):</p>
+<pre><code>// Success (200)
+{
+  "success": true,
+  "data": { ... },
+  "message": "Purchase request created successfully"
+}
+
+// Validation error (400 / 422)
+{
+  "success": false,
+  "errors": [
+    { "field": "C1_PRODUTO", "message": "Product code is required" },
+    { "field": "C1_QUANT",   "message": "Quantity must be greater than zero" }
+  ],
+  "message": "Validation failed"
+}
+
+// Server error (500)
+{
+  "success": false,
+  "errors": [],
+  "message": "Internal server error — check AppServer logs"
+}</code></pre>
+
+<h4>ExecAuto wrapper pattern</h4>
+<p>Never call MsExecAuto directly. Use the <code>shared/protheus/execauto.tlpp</code> wrapper that handles error trapping:</p>
+<pre><code>// shared/protheus/execauto.tlpp — simplified pattern
+
+Function NzExecAuto(cFunction, nOption, aFields, cMessage)
+  Local lSuccess := .T.
+
+  BEGIN TRANSACTION
+    PREPARE ENVIRONMENT EMPRESA '01' FILIAL '01'
+
+    MsExecAuto({|x,y,z| &cFunction(x,y,z)}, aFields, nOption)
+
+    If lMsErroAuto
+      cMessage := MostraErro("", "")
+      lSuccess := .F.
+      DISARM TRANSACTION
+    EndIf
+  END TRANSACTION
+
+Return { lSuccess, cMessage }</code></pre>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- APPENDIX B -->
+<!-- ============================================================ -->
+<section id="actions-catalog">
+<h2>Appendix B — Complete GitHub Actions Catalog</h2>
+
+<p>Summary of all workflows and where they apply:</p>
+
+<table>
+  <tr><th>Workflow</th><th>File name</th><th>Python</th><th>JS/TS</th><th>TLPP</th><th>Node-RED</th></tr>
+  <tr><td>PR title + body validation</td><td><code>pr-validation.yml</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+  <tr><td>Lint + type check</td><td><code>{stack}-ci.yml</code></td><td>Yes</td><td>Yes</td><td>—</td><td>—</td></tr>
+  <tr><td>Unit / integration tests</td><td><code>{stack}-ci.yml</code></td><td>Yes</td><td>Yes</td><td>—</td><td>Optional</td></tr>
+  <tr><td>Layer / architecture check</td><td><code>{stack}-ci.yml</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>—</td></tr>
+  <tr><td>Payload JSON validation</td><td><code>tlpp-ci.yml</code></td><td>—</td><td>—</td><td>Yes</td><td>—</td></tr>
+  <tr><td>Hardcoded credentials check</td><td><code>tlpp-ci.yml</code></td><td>—</td><td>—</td><td>Yes</td><td>—</td></tr>
+  <tr><td>Dockerfile lint + build</td><td><code>docker-ci.yml</code></td><td>Yes</td><td>Yes</td><td>—</td><td>Optional</td></tr>
+  <tr><td>Auto-label by file type</td><td><code>auto-label.yml</code></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+</table>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- APPENDIX C -->
+<!-- ============================================================ -->
+<section id="migration-checklist">
+<h2>Appendix C — Existing Repo Migration Checklist</h2>
+
+<p>For each existing repository that needs to adopt the new standards:</p>
+
+<h3>Pre-migration</h3>
+<ul>
+  <li>[ ] Identify the stack and choose the matching template as reference</li>
+  <li>[ ] Review current folder structure and map files to the standard layers</li>
+  <li>[ ] Identify files that violate layer separation (e.g., SQL in controllers)</li>
+  <li>[ ] Check for hardcoded credentials or config values</li>
+</ul>
+
+<h3>Migration steps</h3>
+<ol>
+  <li>[ ] Create a <code>migration/adopt-standards</code> branch</li>
+  <li>[ ] Add <code>.github/workflows/</code> — copy from template repo</li>
+  <li>[ ] Add <code>.github/PULL_REQUEST_TEMPLATE.md</code></li>
+  <li>[ ] Add <code>.github/ISSUE_TEMPLATE/</code> (bug-report.yml + feature-request.yml)</li>
+  <li>[ ] Add <code>.github/CODEOWNERS</code></li>
+  <li>[ ] Add <code>.github/labeler.yml</code></li>
+  <li>[ ] Add <code>.editorconfig</code></li>
+  <li>[ ] Update <code>.gitignore</code> from template</li>
+  <li>[ ] Reorganize <code>src/</code> to match standard layer structure</li>
+  <li>[ ] Move tests to <code>tests/unit/</code> and <code>tests/integration/</code></li>
+  <li>[ ] Add payloads folder with test JSONs (TLPP only)</li>
+  <li>[ ] Update <code>README.md</code> with standard sections</li>
+  <li>[ ] Add <code>docs/</code> folder with development-guide, architecture, security, roadmap, and backlog templates</li>
+  <li>[ ] Open a PR, let CI run, fix any failures</li>
+  <li>[ ] After merge, enable branch protection on <code>main</code></li>
+</ol>
+
+<h3>Post-migration</h3>
+<ul>
+  <li>[ ] Verify CI runs on next PR</li>
+  <li>[ ] Verify branch protection blocks direct pushes</li>
+  <li>[ ] Verify CODEOWNERS assigns the right reviewers</li>
+  <li>[ ] Update any CI/CD deployment pipelines if paths changed</li>
+  <li>[ ] Notify the team that the repo now follows the new standards</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Do NOT try to refactor code and migrate structure in the same PR.</strong>
+  The migration PR should only move files and add CI config. Refactoring layer violations (like extracting DB queries from controllers) should be done in follow-up PRs, one at a time.
+</div>
+</section>
+
+
+<footer>
+  <p>NetZero Engineering — Implementation Guide v1.0</p>
+  <p>Companion document to <a href="dev-best-practices.html" style="color: var(--accent);">Development Best Practices</a></p>
+</footer>
+
+</div>
+</body>
+</html>
