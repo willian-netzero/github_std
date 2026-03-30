@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Backlog (Template)</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+      --green: #3fb950; --red: #f85149; --orange: #d29922;
+      --purple: #bc8cff; --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    .badge { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; font-size: 0.8rem; color: var(--accent); margin: 0.3rem 0.15rem; }
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--purple); }
+    p { margin-bottom: 0.8rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 0.8rem 0; padding: 0.8rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    details[open] summary { margin-bottom: 0.6rem; }
+    .task-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1rem 0; }
+    .task-card h4 { margin-top: 0; }
+    .status-badge { display: inline-block; border-radius: 12px; padding: 0.15rem 0.6rem; font-size: 0.75rem; font-weight: 600; }
+    .status-todo { background: rgba(139,148,158,0.15); color: var(--text-muted); }
+    .status-progress { background: rgba(88,166,255,0.15); color: var(--accent); }
+    .status-review { background: rgba(188,140,255,0.15); color: var(--purple); }
+    .status-done { background: rgba(63,185,80,0.15); color: var(--green); }
+    .status-blocked { background: rgba(248,81,73,0.15); color: var(--red); }
+    .priority-critical { color: var(--red); font-weight: 600; }
+    .priority-high { color: var(--orange); font-weight: 600; }
+    .priority-medium { color: var(--accent); }
+    .priority-low { color: var(--text-muted); }
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 0.3rem 0; padding-left: 1.5rem; position: relative; }
+    .checklist li::before { content: "☐"; position: absolute; left: 0; color: var(--text-muted); }
+    @media print { body { background: #fff; color: #222; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>NetZero — Backlog (Template)</h1>
+      <p>Prioritized task list organized by epic — consistency and traceability</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge">template</span>
+        <span class="badge">per-project</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>Priority Levels</h2>
+      <div class="callout callout-good">
+        <strong>Critical</strong> <span class="priority-critical">■</span>
+        <strong style="margin-left: 2rem;">High</strong> <span class="priority-high">■</span>
+        <strong style="margin-left: 2rem;">Medium</strong> <span class="priority-medium">■</span>
+        <strong style="margin-left: 2rem;">Low</strong> <span class="priority-low">■</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Status Legend</h2>
+      <div style="margin: 1rem 0;">
+        <span class="status-badge status-todo">Todo</span>
+        <span class="status-badge status-progress">In Progress</span>
+        <span class="status-badge status-review">In Review</span>
+        <span class="status-badge status-done">Done</span>
+        <span class="status-badge status-blocked">Blocked</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>How to use this file</h2>
+      <div class="callout callout-info">
+        <ol style="margin: 0; padding-left: 1.5rem;">
+          <li>Tasks are grouped by <strong>epic</strong> (large feature or theme)</li>
+          <li>Each task has a unique <strong>ID</strong> — never reuse IDs, even if a task is deleted</li>
+          <li>When starting work, update <strong>Status</strong> and <strong>Owner</strong></li>
+          <li>When done, move the task to the <strong>Completed</strong> section at the bottom</li>
+          <li>Keep this file in sync with PRs — reference task IDs in commit messages and PR descriptions</li>
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <h2>Backlog</h2>
+
+      <details>
+        <summary>EPIC-001 — <em>Epic Name Here</em></summary>
+        <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">Replace with your actual epic. Example: "Core API", "Authentication", "Reporting"</p>
+
+        <div class="task-card">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+            <h4>TSK-001 — Task title</h4>
+            <span class="status-badge status-todo">Todo</span>
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <strong>Priority:</strong> <span class="priority-high">High</span><br>
+            <strong>Owner:</strong> <em>unassigned</em>
+          </div>
+          <p><strong>Objective:</strong> What this task achieves (1-2 sentences)</p>
+          <p><strong>Scope:</strong></p>
+          <ul style="margin-bottom: 0.8rem;">
+            <li>What's included</li>
+            <li>What's included</li>
+          </ul>
+          <p><strong>Out of scope:</strong> What's NOT included</p>
+          <p><strong>Acceptance criteria:</strong></p>
+          <ul class="checklist">
+            <li>Criterion 1</li>
+            <li>Criterion 2</li>
+            <li>Criterion 3</li>
+          </ul>
+          <p><strong>Dependencies:</strong> <em>None</em></p>
+        </div>
+
+        <div class="task-card">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+            <h4>TSK-002 — Task title</h4>
+            <span class="status-badge status-todo">Todo</span>
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <strong>Priority:</strong> <span class="priority-medium">Medium</span><br>
+            <strong>Owner:</strong> <em>unassigned</em>
+          </div>
+          <p><strong>Objective:</strong> ...</p>
+          <p><strong>Scope:</strong></p>
+          <ul style="margin-bottom: 0.8rem;">
+            <li>...</li>
+          </ul>
+          <p><strong>Out of scope:</strong> ...</p>
+          <p><strong>Acceptance criteria:</strong></p>
+          <ul class="checklist">
+            <li>...</li>
+          </ul>
+          <p><strong>Dependencies:</strong> <em>TSK-001</em></p>
+        </div>
+      </details>
+
+      <details>
+        <summary>EPIC-002 — <em>Epic Name Here</em></summary>
+
+        <div class="task-card">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem;">
+            <h4>TSK-003 — Task title</h4>
+            <span class="status-badge status-todo">Todo</span>
+          </div>
+          <div style="margin-bottom: 0.8rem;">
+            <strong>Priority:</strong> <span class="priority-medium">Medium</span><br>
+            <strong>Owner:</strong> <em>unassigned</em>
+          </div>
+          <p><strong>Objective:</strong> ...</p>
+          <p><strong>Scope:</strong></p>
+          <ul style="margin-bottom: 0.8rem;">
+            <li>...</li>
+          </ul>
+          <p><strong>Acceptance criteria:</strong></p>
+          <ul class="checklist">
+            <li>...</li>
+          </ul>
+          <p><strong>Dependencies:</strong> <em>None</em></p>
+        </div>
+      </details>
+
+      <details>
+        <summary>EPIC-003 — <em>Epic Name Here</em></summary>
+        <p style="margin-top: 1rem; color: var(--text-muted);">Add tasks as needed following the same format.</p>
+      </details>
+    </section>
+
+    <section>
+      <h2>Completed</h2>
+      <p style="color: var(--text-muted); font-style: italic; margin-bottom: 1rem;">Move completed tasks here. Keep the original ID and add the completion date.</p>
+
+      <div style="background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; font-family: monospace; font-size: 0.85rem; color: var(--text-muted);">
+&lt;!--<br>
+### TSK-000 — Example completed task<br>
+- **Status:** Done<br>
+- **Completed:** 2025-01-15<br>
+- **Owner:** @developer<br>
+- **PR:** #42<br>
+--&gt;
+      </div>
+    </section>
+
+    <footer>
+      <p>NetZero Engineering · Docs Template · Customize for each project</p>
+    </footer>
+  </div>
+</body>
+</html>
