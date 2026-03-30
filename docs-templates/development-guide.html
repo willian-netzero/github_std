@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Development Guide (Template)</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --orange: #d29922;
+      --purple: #bc8cff;
+      --code-bg: #0d1117;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.2rem 0.7rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin: 0.3rem 0.15rem;
+    }
+
+    nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+
+    section { margin-bottom: 3rem; }
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.2rem;
+    }
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.6rem;
+      color: var(--accent);
+    }
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1rem 0 0.4rem;
+      color: var(--purple);
+    }
+
+    p { margin-bottom: 0.8rem; }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0.8rem 0 1.2rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    code {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      font-size: 0.88rem;
+    }
+    p code, li code, td code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.15rem 0.4rem;
+    }
+
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8rem 0 1.2rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--border);
+    }
+    th { background: var(--surface); font-weight: 600; }
+
+    .callout {
+      border-radius: 6px;
+      padding: 1rem 1.2rem;
+      margin: 1rem 0;
+      border-left: 4px solid;
+    }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout-bad  { background: rgba(248,81,73,0.08); border-color: var(--red); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      font-family: monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 2rem;
+      margin-top: 3rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0.8rem 0;
+      padding: 0.8rem 1rem;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    details[open] summary { margin-bottom: 0.6rem; }
+
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li { padding: 0.3rem 0; padding-left: 1.5rem; position: relative; }
+    .checklist li::before { content: "☐"; position: absolute; left: 0; color: var(--text-muted); }
+
+    @media print {
+      body { background: #fff; color: #222; }
+      pre { border-color: #ccc; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Development Guide</h1>
+      <p>Single source of truth for how we build software in this project</p>
+      <div style="margin-top: 1rem;">
+        <span class="badge">template</span>
+        <span class="badge">per-project</span>
+      </div>
+    </header>
+
+    <nav>
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#active-scope">Active Scope</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#conventions">Conventions</a></li>
+        <li><a href="#security">Security Rules</a></li>
+        <li><a href="#branching">Branching & PR Flow</a></li>
+        <li><a href="#dod">Definition of Done</a></li>
+        <li><a href="#local-dev">Local Development</a></li>
+        <li><a href="#related">Related Documents</a></li>
+      </ol>
+    </nav>
+
+    <section id="active-scope">
+      <h2>Active Scope</h2>
+      <p>This project currently covers:</p>
+      <ul class="checklist">
+        <li><i>Describe the main feature or domain this repo handles</i></li>
+        <li><i>Second feature if applicable</i></li>
+      </ul>
+      <div class="callout callout-info">
+        <strong>Out of scope (for now):</strong>
+        <i>list things people might assume are included but aren't.</i>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+
+      <h3>Stack</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Backend</td>
+            <td><i>e.g. Python/FastAPI</i></td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td><i>e.g. React/TS</i></td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td><i>e.g. PostgreSQL</i></td>
+          </tr>
+          <tr>
+            <td>Infrastructure</td>
+            <td><i>e.g. Docker, K8s</i></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Layer Structure</h3>
+      <pre><code>src/
+├── api/          # or endpoints/ — HTTP layer (Presentation)
+├── services/     # Business logic (Application)
+├── models/       # Domain entities (Domain)
+├── repositories/ # or dao/ — Data access (Infrastructure)
+├── shared/       # Cross-cutting utilities
+└── config/       # Settings, env vars</code></pre>
+
+      <h3>Layer Rules</h3>
+      <ol>
+        <li><strong>Presentation</strong> receives the request, calls a service, returns the response. No business logic.</li>
+        <li><strong>Application</strong> orchestrates use cases. Calls validation, mapping, repositories.</li>
+        <li><strong>Domain</strong> contains entities and business rules. Never imports from infrastructure.</li>
+        <li><strong>Infrastructure</strong> handles DB, external APIs, file system. Never imported by domain.</li>
+      </ol>
+      <p>Dependencies always flow inward: Presentation → Application → Domain ← Infrastructure.</p>
+    </section>
+
+    <section id="conventions">
+      <h2>Conventions</h2>
+
+      <h3>Naming</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Element</th>
+            <th>Convention</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Branches</td>
+            <td><code>feat/</code>, <code>fix/</code>, <code>refactor/</code>, etc.</td>
+            <td><code>feat/user-auth</code></td>
+          </tr>
+          <tr>
+            <td>Commits</td>
+            <td>Conventional Commits</td>
+            <td><code>feat(auth): add JWT refresh</code></td>
+          </tr>
+          <tr>
+            <td>Files</td>
+            <td>kebab-case</td>
+            <td><code>user-service.py</code></td>
+          </tr>
+          <tr>
+            <td>Functions</td>
+            <td>snake_case (Python) / camelCase (JS)</td>
+            <td><code>create_user</code> / <code>createUser</code></td>
+          </tr>
+          <tr>
+            <td>Constants</td>
+            <td>UPPER_SNAKE_CASE</td>
+            <td><code>MAX_RETRY_COUNT</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Code Style</h3>
+      <ul>
+        <li>Linter runs on every PR and blocks merge on failure</li>
+        <li>Formatting is enforced by <code>.editorconfig</code> + stack-specific tools (Ruff, ESLint, etc.)</li>
+        <li>No <code>console.log</code> / <code>print()</code> in production code</li>
+        <li>No hardcoded secrets — use environment variables</li>
+      </ul>
+    </section>
+
+    <section id="security">
+      <h2>Security Rules</h2>
+      <div class="callout callout-warn">
+        <strong>Never commit secrets.</strong>
+        API keys, tokens, passwords go in environment variables only.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Never trust user input.</strong>
+        Validate everything at the boundary (API layer or validation layer).
+      </div>
+      <div class="callout callout-warn">
+        <strong>Use parameterized queries.</strong>
+        No string interpolation in SQL.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Dependencies must be audited.</strong>
+        CI runs <code>pip audit</code> / <code>npm audit</code> on every PR.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Sensitive data must not appear in logs.</strong>
+        Mask PII, tokens, and credentials.
+      </div>
+      <div class="callout callout-warn">
+        <strong>Docker images must not run as root</strong>
+        unless explicitly justified and documented.
+      </div>
+    </section>
+
+    <section id="branching">
+      <h2>Branching & PR Flow</h2>
+      <p>We use <strong>GitHub Flow</strong> — one long-lived branch (<code>main</code>) and short-lived feature branches.</p>
+
+      <h3>Workflow</h3>
+      <div class="flow">
+        1. Pull latest main
+        2. Create branch: feat/my-feature
+        3. Code + commit (Conventional Commits)
+        4. Push and open PR
+        5. CI runs (lint, test, architecture check)
+        6. Reviewer approves
+        7. Squash merge to main
+      </div>
+
+      <h3>Branch Protection (main)</h3>
+      <ul>
+        <li>Require PR before merging (no direct push)</li>
+        <li>Require at least 1 approval</li>
+        <li>Require CI status checks to pass</li>
+        <li>Require branch up-to-date with main</li>
+        <li>Require linear history (squash merge)</li>
+      </ul>
+
+      <h3>PR Checklist</h3>
+      <p>Every PR must fill the template. At minimum:</p>
+      <ul class="checklist">
+        <li>Code follows layer separation guidelines</li>
+        <li>No business logic in controllers/endpoints</li>
+        <li>No hardcoded secrets</li>
+        <li>Tests added or updated</li>
+        <li>Linter passes with no warnings</li>
+        <li>Self-reviewed my own code</li>
+      </ul>
+    </section>
+
+    <section id="dod">
+      <h2>Definition of Done</h2>
+      <p>A feature is "done" when:</p>
+      <ul class="checklist">
+        <li>Code merged to <code>main</code> via approved PR</li>
+        <li>All CI checks green (lint + tests + architecture)</li>
+        <li>Test coverage meets minimum threshold</li>
+        <li>No unresolved review comments</li>
+        <li>README updated if behavior changed</li>
+        <li>No tech debt introduced without a follow-up issue</li>
+      </ul>
+    </section>
+
+    <section id="local-dev">
+      <h2>Local Development</h2>
+
+      <h3>Prerequisites</h3>
+      <ul>
+        <li><i>e.g. Docker, Python 3.12+, Node 20+</i></li>
+        <li><i>e.g. Access to <code>.env</code> template (never commit actual <code>.env</code>)</i></li>
+      </ul>
+
+      <h3>Getting Started</h3>
+      <pre><code># Clone the repo
+git clone git@github.com:netzero-hq/&lt;repo-name&gt;.git
+cd &lt;repo-name&gt;
+
+# Copy env template
+cp .env.example .env
+
+# Start services
+docker compose up -d
+
+# Run tests
+# Python: pytest tests/
+# JS/TS: npm test</code></pre>
+
+      <h3>Environment Variables</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Variable</th>
+            <th>Purpose</th>
+            <th>Default</th>
+            <th>Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>DATABASE_URL</code></td>
+            <td>Database connection</td>
+            <td>—</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><code>API_KEY</code></td>
+            <td>External service key</td>
+            <td>—</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><code>LOG_LEVEL</code></td>
+            <td>Logging verbosity</td>
+            <td><code>info</code></td>
+            <td>No</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="related">
+      <h2>Related Documents</h2>
+      <ul>
+        <li><a href="roadmap.html">Roadmap</a> — what's planned, in progress, and done</li>
+        <li><a href="backlog.html">Backlog</a> — prioritized task list</li>
+        <li><a href="../dev-best-practices.html">NetZero Dev Best Practices</a> — org-wide standards</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>NetZero Engineering · Docs Template · Customize for each project</p>
+    </footer>
+  </div>
+</body>
+</html>
