@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetZero — Multi-Agent Architecture for Automated Code Quality</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+      --green: #3fb950; --red: #f85149; --orange: #d29922;
+      --purple: #bc8cff; --cyan: #39d353; --code-bg: #0d1117;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 16px; }
+    .container { max-width: 980px; margin: 0 auto; padding: 2rem 1.5rem; }
+    header { text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+    header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    header p { color: var(--text-muted); font-size: 1.05rem; }
+    nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 3rem; }
+    nav h2 { font-size: 1rem; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    nav ol { padding-left: 1.5rem; }
+    nav li { margin-bottom: 0.3rem; }
+    nav a { color: var(--accent); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    section { margin-bottom: 3rem; }
+    h2 { font-size: 1.6rem; font-weight: 600; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem; }
+    h3 { font-size: 1.2rem; font-weight: 600; margin: 1.5rem 0 0.6rem; color: var(--accent); }
+    h4 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--purple); }
+    p { margin-bottom: 0.8rem; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; margin: 0.8rem 0 1.2rem; font-size: 0.85rem; line-height: 1.5; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-size: 0.85rem; }
+    p code, li code, td code { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.15rem 0.4rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+    li { margin-bottom: 0.3rem; }
+    table { width: 100%; border-collapse: collapse; margin: 0.8rem 0 1.2rem; }
+    th, td { text-align: left; padding: 0.6rem 0.8rem; border: 1px solid var(--border); }
+    th { background: var(--surface); font-weight: 600; }
+    .callout { border-radius: 6px; padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid; }
+    .callout-info { background: rgba(88,166,255,0.08); border-color: var(--accent); }
+    .callout-warn { background: rgba(210,153,34,0.08); border-color: var(--orange); }
+    .callout-good { background: rgba(63,185,80,0.08); border-color: var(--green); }
+    .callout strong { display: block; margin-bottom: 0.3rem; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; margin: 0.8rem 0; padding: 0.8rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+    details[open] summary { margin-bottom: 0.6rem; }
+    .agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; }
+    .agent-card h3 { margin-top: 0; }
+    .agent-tag { display: inline-block; background: rgba(88,166,255,0.15); border: 1px solid var(--accent); border-radius: 4px; padding: 0.1rem 0.5rem; font-size: 0.75rem; color: var(--accent); margin-right: 0.3rem; }
+    .agent-tag.trigger { background: rgba(63,185,80,0.15); border-color: var(--green); color: var(--green); }
+    .agent-tag.autonomous { background: rgba(210,153,34,0.15); border-color: var(--orange); color: var(--orange); }
+    footer { border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Multi-Agent Architecture</h1>
+  <p>Automated code quality, review, and enforcement for NetZero engineering</p>
+</header>
+
+<nav>
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Architecture Overview</a></li>
+    <li><a href="#agents">The 5 Agents</a></li>
+    <li><a href="#webhook">Webhook Handler (Orchestrator)</a></li>
+    <li><a href="#flow">End-to-End PR Flow</a></li>
+    <li><a href="#infra">Infrastructure &amp; Deployment</a></li>
+    <li><a href="#cowork">Using with Cowork / Claude Code</a></li>
+    <li><a href="#files">File Reference</a></li>
+  </ol>
+</nav>
+
+
+<!-- ============================================================ -->
+<section id="overview">
+<h2>1. Architecture Overview</h2>
+
+<p>The system consists of <strong>5 specialized agents</strong> orchestrated by a <strong>webhook handler</strong> that listens to GitHub events. Each agent has a single, well-defined responsibility and communicates through GitHub's API (comments, status checks, labels).</p>
+
+<pre><code>
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                        GitHub Repository                                │
+  │                                                                         │
+  │  Developer opens PR  ──→  Webhook fires  ──→  Events dispatched         │
+  └────────────────────────────────┬────────────────────────────────────────┘
+                                   │
+                                   ▼
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                     WEBHOOK HANDLER (Orchestrator)                      │
+  │                                                                         │
+  │  Receives: pull_request.opened, pull_request.synchronize,               │
+  │            pull_request_review.submitted, issue_comment.created          │
+  │                                                                         │
+  │  Dispatches to agents based on event type and file changes              │
+  └──────┬──────────┬──────────┬──────────┬──────────┬──────────┬──────────┘
+         │          │          │          │          │          │
+         ▼          ▼          ▼          ▼          ▼
+  ┌──────────┐┌──────────┐┌──────────┐┌──────────┐┌──────────┐
+  │ ARCH     ││ CODE     ││ TEST     ││ SECURITY ││ PR       │
+  │ GUARD    ││ REVIEWER ││ RUNNER   ││ SCANNER  ││ SUMMARY  │
+  │          ││          ││          ││          ││          │
+  │ Validates││ Reviews  ││ Runs     ││ Checks   ││ Auto-    │
+  │ layer    ││ code     ││ tests &  ││ secrets, ││ generates│
+  │ rules &  ││ quality  ││ reports  ││ vulns,   ││ PR       │
+  │ imports  ││ & style  ││ coverage ││ deps     ││ summary  │
+  │ (all     ││          ││          ││          ││          │
+  │ stacks)  ││          ││          ││          ││          │
+  └──────────┘└──────────┘└──────────┘└──────────┘└──────────┘
+         │          │          │          │          │
+         └──────────┴──────────┴──────────┴──────────┘
+                                   │
+                                   ▼
+                        GitHub PR (comments, checks, labels)
+</code></pre>
+
+<h3>Design principles</h3>
+<ol>
+  <li><strong>Single responsibility</strong> — each agent does exactly one thing, well.</li>
+  <li><strong>Event-driven</strong> — agents react to GitHub webhooks, not polling.</li>
+  <li><strong>Stateless</strong> — agents don't remember previous runs. All context comes from the PR.</li>
+  <li><strong>Stack-aware</strong> — agents detect which stack changed and apply the right rules.</li>
+  <li><strong>Non-blocking</strong> — agents run in parallel. Only the webhook handler orchestrates.</li>
+  <li><strong>Fail-safe</strong> — if an agent fails, the PR is not blocked (except for required checks).</li>
+</ol>
+</section>
+
+
+<!-- ============================================================ -->
+<section id="agents">
+<h2>2. The 5 Agents</h2>
+
+<!-- AGENT 1 -->
+<div class="agent-card">
+  <h3>Agent 1 — Architecture Guard</h3>
+  <span class="agent-tag">Required Check</span>
+  <span class="agent-tag trigger">Trigger: PR opened/sync</span>
+  <span class="agent-tag autonomous">Autonomous</span>
+
+  <p><strong>Purpose:</strong> Enforces layer separation rules across all stacks. This is the most critical agent — it prevents architectural drift.</p>
+
+  <h4>What it checks</h4>
+  <table>
+    <tr><th>Stack</th><th>Rule</th><th>Implementation</th></tr>
+    <tr><td>Python</td><td>API layer must not import from repositories or ORM</td><td>AST analysis or grep on import statements</td></tr>
+    <tr><td>Python</td><td>Domain layer must not import from API</td><td>Grep for <code>from api import</code> in models/</td></tr>
+    <tr><td>JS/TS</td><td>Components must not make direct API calls</td><td>Grep for <code>fetch(</code>, <code>axios.</code> in components/</td></tr>
+    <tr><td>JS/TS</td><td>No console.log in production code</td><td>Grep excluding test files</td></tr>
+    <tr><td>TLPP</td><td>endpoint.tlpp must not contain DB operations</td><td>Grep for <code>DbSelectArea</code>, <code>RecLock</code>, <code>MsExecAuto</code></td></tr>
+    <tr><td>TLPP</td><td>validation.tlpp must not import mapping or query</td><td>Grep for cross-layer function calls</td></tr>
+    <tr><td>All</td><td>No hardcoded secrets</td><td>Regex for API keys, tokens, passwords</td></tr>
+  </table>
+
+  <h4>Output</h4>
+  <p>Posts a GitHub check run with status <code>success</code> or <code>failure</code>. On failure, adds inline annotations pointing to the exact line that violates the rule.</p>
+</div>
+
+<!-- AGENT 2 -->
+<div class="agent-card">
+  <h3>Agent 2 — Code Reviewer (AI-Powered)</h3>
+  <span class="agent-tag">Advisory</span>
+  <span class="agent-tag trigger">Trigger: PR opened/sync</span>
+  <span class="agent-tag autonomous">Autonomous</span>
+
+  <p><strong>Purpose:</strong> Uses Claude API to perform an intelligent code review. This is the "senior developer" that never sleeps.</p>
+
+  <h4>What it reviews</h4>
+  <ul>
+    <li>Code quality and readability</li>
+    <li>Potential bugs and edge cases</li>
+    <li>Clean code adherence (naming, function size, single responsibility)</li>
+    <li>Missing error handling</li>
+    <li>Performance concerns (N+1 queries, unnecessary loops)</li>
+    <li>Suggestions for improvement with code examples</li>
+  </ul>
+
+  <h4>How it works</h4>
+  <ol>
+    <li>Fetches the PR diff via GitHub API</li>
+    <li>Detects the stack from file extensions</li>
+    <li>Loads stack-specific review guidelines (from this document)</li>
+    <li>Sends to Claude API with a structured prompt</li>
+    <li>Posts the review as PR comments (inline on specific lines)</li>
+  </ol>
+
+  <h4>Output</h4>
+  <p>Posts PR review comments. Does NOT block the merge — it's advisory. Human reviewers make the final call.</p>
+</div>
+
+<!-- AGENT 3 -->
+<div class="agent-card">
+  <h3>Agent 3 — Test Runner</h3>
+  <span class="agent-tag">Required Check</span>
+  <span class="agent-tag trigger">Trigger: PR opened/sync</span>
+  <span class="agent-tag autonomous">Autonomous</span>
+
+  <p><strong>Purpose:</strong> Runs the test suite and reports coverage. Blocks merge if tests fail or coverage drops below threshold.</p>
+
+  <h4>Stack-specific behavior</h4>
+  <table>
+    <tr><th>Stack</th><th>Test command</th><th>Coverage threshold</th></tr>
+    <tr><td>Python</td><td><code>pytest --cov --cov-fail-under=70</code></td><td>70% lines</td></tr>
+    <tr><td>JS/TS</td><td><code>jest --coverage</code></td><td>70% lines, 60% branches</td></tr>
+    <tr><td>TLPP</td><td>Validate JSON payloads + optional REST tests</td><td>All endpoints covered</td></tr>
+    <tr><td>Node-RED</td><td><code>npm test</code> (if custom nodes exist)</td><td>Custom nodes covered</td></tr>
+  </table>
+
+  <h4>Output</h4>
+  <p>GitHub check run with pass/fail status. Posts a coverage summary comment on the PR.</p>
+</div>
+
+<!-- AGENT 4 -->
+<div class="agent-card">
+  <h3>Agent 4 — Security Scanner</h3>
+  <span class="agent-tag">Required Check</span>
+  <span class="agent-tag trigger">Trigger: PR opened/sync</span>
+  <span class="agent-tag autonomous">Autonomous</span>
+
+  <p><strong>Purpose:</strong> Scans for security issues: leaked secrets, vulnerable dependencies, dangerous patterns.</p>
+
+  <h4>What it scans</h4>
+  <ul>
+    <li><strong>Secrets detection</strong> — API keys, tokens, passwords in code (via <code>trufflehog</code> or <code>gitleaks</code>)</li>
+    <li><strong>Dependency audit</strong> — known CVEs in dependencies (<code>pip audit</code>, <code>npm audit</code>)</li>
+    <li><strong>TLPP-specific</strong> — hardcoded credentials in <code>cPassword</code>, <code>cToken</code> variables</li>
+    <li><strong>Dockerfile</strong> — running as root, using <code>latest</code> tags, missing health checks</li>
+  </ul>
+
+  <h4>Output</h4>
+  <p>GitHub check run. Blocks merge if secrets are found. Advisory for dependency warnings.</p>
+</div>
+
+<!-- AGENT 5 -->
+<div class="agent-card">
+  <h3>Agent 5 — PR Summarizer (AI-Powered)</h3>
+  <span class="agent-tag">Advisory</span>
+  <span class="agent-tag trigger">Trigger: PR opened</span>
+
+  <p><strong>Purpose:</strong> Automatically generates a human-readable summary of what the PR does. Helps reviewers understand the change before diving into code.</p>
+
+  <h4>What it generates</h4>
+  <ul>
+    <li>One-paragraph summary of the change</li>
+    <li>List of files changed with a brief description per file</li>
+    <li>Risk assessment (low / medium / high) based on which layers are touched</li>
+    <li>Suggested reviewers based on CODEOWNERS and expertise</li>
+  </ul>
+
+  <h4>Output</h4>
+  <p>Posts a comment at the top of the PR with the summary. Updates if the PR is updated.</p>
+</div>
+
+<!-- Note: TLPP-specific checks (endpoint purity, hardcoded credentials) are handled
+     by the Architecture Guard agent, which is stack-aware and applies TLPP rules
+     automatically when .tlpp files are in the diff. No dedicated TLPP agent needed. -->
+</section>
+
+
+<!-- ============================================================ -->
+<section id="webhook">
+<h2>3. Webhook Handler (Orchestrator)</h2>
+
+<p>The webhook handler is a lightweight Python service that receives GitHub webhook events and dispatches work to the appropriate agents. It runs as a Docker container.</p>
+
+<h3>Event routing</h3>
+<pre><code>
+  GitHub Event                      Agents Triggered
+  ─────────────────────────────────────────────────────
+  pull_request.opened          →    ALL agents (parallel)
+  pull_request.synchronize     →    Architecture Guard
+                                    Code Reviewer
+                                    Test Runner
+                                    Security Scanner
+  pull_request_review.submitted →   (none — human reviews only)
+  issue_comment.created         →   Code Reviewer (if @netzero-bot is mentioned)
+</code></pre>
+
+<h3>Stack detection logic</h3>
+<pre><code># The handler checks changed files to determine which stacks are involved
+def detect_stacks(changed_files: list[str]) -> set[str]:
+    stacks = set()
+    for f in changed_files:
+        if f.endswith('.py'):
+            stacks.add('python')
+        elif f.endswith(('.ts', '.tsx', '.js', '.jsx')):
+            stacks.add('javascript')
+        elif f.endswith('.tlpp'):
+            stacks.add('tlpp')
+        elif 'flows/' in f and f.endswith('.json'):
+            stacks.add('nodered')
+        elif f == 'Dockerfile' or f.startswith('docker-compose'):
+            stacks.add('docker')
+    return stacks</code></pre>
+
+<h3>Deployment options</h3>
+<table>
+  <tr><th>Option</th><th>Pros</th><th>Cons</th></tr>
+  <tr><td>GitHub Actions (self-hosted runner)</td><td>No extra infra, native GitHub integration</td><td>Limited control, cold starts</td></tr>
+  <tr><td>Docker on your own server</td><td>Full control, always warm, can use Claude API directly</td><td>Need to manage infra</td></tr>
+  <tr><td>AWS Lambda / Cloud Function</td><td>Serverless, auto-scaling, cheap at low volume</td><td>Cold starts, 15min timeout</td></tr>
+</table>
+
+<div class="callout callout-good">
+  <strong>Recommended: GitHub Actions as the primary runner</strong>
+  For most agents, GitHub Actions is sufficient and requires zero additional infrastructure. The AI-powered agents (Code Reviewer, PR Summarizer) need API access to Claude, which works fine from a GitHub Action using repository secrets.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<section id="flow">
+<h2>4. End-to-End PR Flow</h2>
+
+<pre><code>
+  Developer pushes code
+       │
+       ▼
+  Opens Pull Request
+       │
+       ├──→  PR Validation (GitHub Action — title, body, checklist)
+       │
+       ├──→  Webhook fires ──→  Orchestrator dispatches:
+       │         │
+       │         ├──→  [1] Architecture Guard  ──→  ✅ or ❌ (required check)
+       │         ├──→  [2] Code Reviewer (AI)  ──→  📝 Review comments (advisory)
+       │         ├──→  [3] Test Runner         ──→  ✅ or ❌ (required check)
+       │         ├──→  [4] Security Scanner    ──→  ✅ or ❌ (required check)
+       │         └──→  [5] PR Summarizer (AI)  ──→  📋 Summary comment
+       │
+       ▼
+  All checks pass?
+       │
+       ├── No  ──→  Developer fixes issues, pushes again (loop back)
+       │
+       └── Yes ──→  Human reviewer examines:
+                        ─ AI review comments
+                        ─ PR summary
+                        ─ The actual diff
+                        │
+                        ├── Approves ──→  Merge to main ──→  Deploy pipeline
+                        │
+                        └── Requests changes ──→  Developer fixes (loop back)
+</code></pre>
+
+<h3>What blocks merge vs. what advises</h3>
+<table>
+  <tr><th>Agent</th><th>Blocks merge?</th><th>Rationale</th></tr>
+  <tr><td>Architecture Guard</td><td>Yes</td><td>Layer violations are structural debt — catch them before they enter main</td></tr>
+  <tr><td>Code Reviewer (AI)</td><td>No</td><td>AI suggestions are helpful but not authoritative — human decides</td></tr>
+  <tr><td>Test Runner</td><td>Yes</td><td>Broken tests must never reach main</td></tr>
+  <tr><td>Security Scanner</td><td>Yes (secrets only)</td><td>Leaked secrets are irrecoverable — everything else is advisory</td></tr>
+  <tr><td>PR Summarizer</td><td>No</td><td>Informational only</td></tr>
+  <!-- TLPP checks are part of Architecture Guard -->
+</table>
+</section>
+
+
+<!-- ============================================================ -->
+<section id="infra">
+<h2>5. Infrastructure &amp; Deployment</h2>
+
+<h3>Option A — All in GitHub Actions (simplest)</h3>
+<p>Every agent runs as a GitHub Actions workflow. AI agents use <code>ANTHROPIC_API_KEY</code> stored in repository secrets.</p>
+
+<pre><code>repo/
+├── .github/
+│   └── workflows/
+│       ├── agent-arch-guard.yml        # Architecture Guard
+│       ├── agent-code-reviewer.yml     # Code Reviewer (AI)
+│       ├── agent-test-runner.yml       # Test Runner
+│       ├── agent-security-scanner.yml  # Security Scanner
+│       ├── agent-pr-summarizer.yml     # PR Summarizer (AI)
+│       └── agent-pr-summarizer.yml     # PR Summarizer (AI)
+└── agents/
+    ├── code-reviewer/
+    │   ├── review.py                   # Claude API code review logic
+    │   ├── prompts/
+    │   │   ├── system.md               # System prompt for the reviewer
+    │   │   ├── python.md               # Python-specific rules
+    │   │   ├── javascript.md           # JS/TS-specific rules
+    │   │   └── tlpp.md                 # TLPP-specific rules
+    │   └── requirements.txt
+    ├── pr-summarizer/
+    │   ├── summarize.py                # Claude API PR summary logic
+    │   ├── prompts/
+    │   │   └── system.md
+    │   └── requirements.txt
+    └── shared/
+        ├── github_client.py            # GitHub API helper
+        └── stack_detector.py           # Detect stacks from file list</code></pre>
+
+<h3>Option B — Central webhook + GitHub Actions hybrid</h3>
+<p>A lightweight webhook handler (FastAPI) receives events and triggers specific GitHub Actions via the <code>repository_dispatch</code> API. This gives more control over routing and allows rate limiting.</p>
+
+<pre><code># Architecture:
+#
+# GitHub Webhook  →  FastAPI (Docker)  →  Repository Dispatch  →  GitHub Actions
+#
+# The FastAPI service is the "brain" that decides which agents to run.
+# GitHub Actions are the "muscles" that do the actual work.</code></pre>
+
+<h3>Required secrets (GitHub repo settings)</h3>
+<table>
+  <tr><th>Secret</th><th>Used by</th><th>Purpose</th></tr>
+  <tr><td><code>ANTHROPIC_API_KEY</code></td><td>Code Reviewer, PR Summarizer</td><td>Claude API access</td></tr>
+  <tr><td><code>GITHUB_TOKEN</code></td><td>All agents</td><td>Auto-provided by GitHub Actions</td></tr>
+</table>
+</section>
+
+
+<!-- ============================================================ -->
+<section id="cowork">
+<h2>6. Using with Cowork / Claude Code</h2>
+
+<h3>Cowork mode (interactive)</h3>
+<p>For interactive development sessions, you can invoke agents manually through Cowork:</p>
+<ul>
+  <li><strong>"Review this PR"</strong> — triggers the Code Reviewer logic on the current branch diff</li>
+  <li><strong>"Check architecture"</strong> — runs the Architecture Guard rules locally before pushing</li>
+  <li><strong>"Summarize my changes"</strong> — generates a PR description draft</li>
+  <li><strong>"Run security scan"</strong> — checks for secrets and vulnerabilities locally</li>
+</ul>
+
+<h3>Claude Code subagents</h3>
+<p>When using Claude Code directly, you can dispatch parallel subagents for larger tasks:</p>
+<pre><code># Example: pre-push validation using subagents
+#
+# Main session dispatches 3 parallel subagents:
+#   ├── Agent 1: Run architecture checks on changed files
+#   ├── Agent 2: Run tests and report coverage
+#   └── Agent 3: Scan for secrets and vulnerabilities
+#
+# All three run in parallel. Main session waits for results.
+# If any agent reports issues, the developer fixes before pushing.</code></pre>
+
+<h3>Autonomous agents via GitHub webhooks</h3>
+<p>The agents in this architecture can be set up to run autonomously — no human intervention needed. The webhook handler receives events from GitHub and dispatches the right agents automatically. This is the primary intended use.</p>
+
+<div class="callout callout-info">
+  <strong>The three modes of operation</strong>
+  <ol>
+    <li><strong>Autonomous (GitHub webhook)</strong> — agents run automatically on every PR. Zero effort from developers.</li>
+    <li><strong>Interactive (Cowork)</strong> — developer asks Claude to run specific checks during a session.</li>
+    <li><strong>CLI (Claude Code)</strong> — developer runs checks from the terminal before pushing.</li>
+  </ol>
+  All three modes use the same agent logic and the same rules. The only difference is how they're triggered.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<section id="files">
+<h2>7. File Reference</h2>
+
+<p>The following files are provided alongside this document in the <code>agents/</code> folder:</p>
+
+<table>
+  <tr><th>Path</th><th>Description</th></tr>
+  <tr><td><code>agents/webhook-handler/app.py</code></td><td>FastAPI webhook receiver and agent orchestrator</td></tr>
+  <tr><td><code>agents/webhook-handler/Dockerfile</code></td><td>Container for the webhook handler</td></tr>
+  <tr><td><code>agents/code-reviewer/review.py</code></td><td>Claude API-powered code review agent</td></tr>
+  <tr><td><code>agents/code-reviewer/prompts/system.md</code></td><td>System prompt for the code reviewer</td></tr>
+  <tr><td><code>agents/pr-summarizer/summarize.py</code></td><td>Claude API-powered PR summarizer</td></tr>
+  <tr><td><code>agents/pr-summarizer/prompts/system.md</code></td><td>System prompt for the PR summarizer</td></tr>
+  <tr><td><code>agents/architecture-guard/check.py</code></td><td>Layer violation scanner</td></tr>
+  <tr><td><code>agents/security-scanner/scan.py</code></td><td>Secret and vulnerability scanner</td></tr>
+  <tr><td><code>agents/test-runner/run.py</code></td><td>Stack-aware test runner</td></tr>
+  <!-- TLPP checks merged into architecture-guard/check.py -->
+  <tr><td><code>agents/shared/github_client.py</code></td><td>GitHub API helper (comments, checks, labels)</td></tr>
+  <tr><td><code>agents/shared/stack_detector.py</code></td><td>Detect stacks from changed files</td></tr>
+  <tr><td><code>.github/workflows/agent-*.yml</code></td><td>GitHub Actions workflows for each agent</td></tr>
+</table>
+</section>
+
+<footer>
+  <p>NetZero Engineering — Multi-Agent Architecture v1.0</p>
+  <p>This document is self-contained. Agents enforce the standards defined by the engineering team.</p>
+</footer>
+
+</div>
+</body>
+</html>
