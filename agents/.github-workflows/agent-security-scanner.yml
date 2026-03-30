@@ -1,0 +1,89 @@
+# Security Scanner Agent — GitHub Actions Workflow
+# Copy to .github/workflows/agent-security-scanner.yml
+name: Security Scanner
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  secrets-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Python
+            check: "find . -name 'requirements*.txt' -maxdepth 2 | head -1"
+            install: "pip install pip-audit"
+            audit: "pip-audit -r requirements.txt --desc || true"
+          - name: JavaScript
+            check: "test -f package.json"
+            install: "npm ci --ignore-scripts 2>/dev/null || true"
+            audit: "npm audit --production || true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check if ${{ matrix.name }} applies
+        id: check
+        run: |
+          if ${{ matrix.check }} 2>/dev/null; then
+            echo "applies=true" >> $GITHUB_OUTPUT
+          else
+            echo "applies=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.check.outputs.applies == 'true' && matrix.name == 'Python'
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.applies == 'true' && matrix.name == 'JavaScript'
+        with:
+          node-version: '20'
+
+      - name: Install and audit
+        if: steps.check.outputs.applies == 'true'
+        run: |
+          ${{ matrix.install }}
+          echo "=== ${{ matrix.name }} Dependency Audit ==="
+          ${{ matrix.audit }}
+
+  tlpp-credentials:
+    name: TLPP Credential Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan TLPP files for hardcoded credentials
+        run: |
+          if ls src/**/*.tlpp 2>/dev/null; then
+            echo "Scanning TLPP files..."
+            if grep -rnE "(cPassword|cToken|cSenha|cChave)\s*:=\s*['\"][^'\"]+['\"]" src/ --include="*.tlpp" 2>/dev/null; then
+              echo "::error::Hardcoded credentials found in TLPP source files."
+              exit 1
+            fi
+            echo "✅ No hardcoded credentials in TLPP files."
+          else
+            echo "No TLPP files found — skipping."
+          fi

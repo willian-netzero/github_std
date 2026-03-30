@@ -1,0 +1,105 @@
+# Architecture Guard Agent — GitHub Actions Workflow
+# Copy this file to .github/workflows/agent-arch-guard.yml in your repo
+name: Architecture Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  architecture-check:
+    name: Layer Separation Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install httpx
+
+      - name: Detect stacks and check architecture
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "=== Architecture Guard ==="
+          ERRORS=0
+
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # ── Python checks ──
+          if echo "$CHANGED_FILES" | grep -q '\.py$'; then
+            echo ""
+            echo "--- Python layer checks ---"
+
+            # API layer must not import from repositories/ORM
+            if grep -rn "from.*repositories.*import\|import.*sqlalchemy" src/api/ 2>/dev/null; then
+              echo "::error::API layer imports from repositories/ORM. Use services instead."
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # Domain must not import API
+            if grep -rn "from.*api.*import" src/models/ 2>/dev/null; then
+              echo "::error::Domain layer imports from API layer."
+              ERRORS=$((ERRORS+1))
+            fi
+          fi
+
+          # ── JS/TS checks ──
+          if echo "$CHANGED_FILES" | grep -qE '\.(ts|tsx|js|jsx)$'; then
+            echo ""
+            echo "--- JavaScript/TypeScript layer checks ---"
+
+            # Components must not make direct API calls
+            if grep -rn "fetch(\|axios\.\|\.get(\|\.post(" src/components/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null | grep -v ".test.\|.spec.\|// allowed"; then
+              echo "::error::Components make direct API calls. Use services/ or hooks/."
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # No console.log
+            if grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null | grep -v ".test.\|.spec.\|// allowed"; then
+              echo "::error::console.log found in production code."
+              ERRORS=$((ERRORS+1))
+            fi
+          fi
+
+          # ── TLPP checks ──
+          if echo "$CHANGED_FILES" | grep -q '\.tlpp$'; then
+            echo ""
+            echo "--- TLPP layer checks ---"
+
+            # endpoint.tlpp must not contain DB operations
+            if grep -rn "DbSelectArea\|RecLock\|MsExecAuto\|MATA[0-9][0-9][0-9]" src/*/endpoint.tlpp 2>/dev/null; then
+              echo "::error::endpoint.tlpp contains DB operations or ExecAuto. Move to service.tlpp."
+              ERRORS=$((ERRORS+1))
+            fi
+          fi
+
+          # ── Universal checks ──
+          echo ""
+          echo "--- Universal checks ---"
+
+          # Hardcoded secrets (all stacks)
+          if grep -rnE "(api_key|secret|password|token)\s*[=:]\s*['\"][^'\"]{8,}['\"]" src/ 2>/dev/null | grep -vi "example\|placeholder\|test\|mock\|fake\|dummy"; then
+            echo "::error::Possible hardcoded secret detected."
+            ERRORS=$((ERRORS+1))
+          fi
+
+          echo ""
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ Found $ERRORS architecture violation(s)."
+            exit 1
+          fi
+          echo "✅ No architecture violations found."
