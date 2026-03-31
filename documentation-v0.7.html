@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NetZero — Development Best Practices</title>
+  <title>NetZero — Development Best Practices & Documentation Strategy v0.7</title>
   <style>
     :root {
       --bg: #0d1117;
@@ -205,14 +205,15 @@
 <div class="container">
 
 <header>
-  <h1>Development Best Practices</h1>
-  <p>Git workflow, code standards &amp; CI/CD for NetZero engineering teams</p>
+  <h1>Development Best Practices & Documentation Strategy</h1>
+  <p>Complete guide to Git workflow, code standards, CI/CD, and documentation for NetZero engineering teams</p>
   <div style="margin-top: 1rem;">
     <span class="badge">Python</span>
     <span class="badge">JS / TS</span>
     <span class="badge">React</span>
     <span class="badge">TLPP</span>
     <span class="badge">Node-RED</span>
+    <span class="badge">Documentation</span>
   </div>
 </header>
 
@@ -222,10 +223,12 @@
   <ol>
     <li><a href="#branching">Branching Strategy</a></li>
     <li><a href="#commits">Commit Conventions</a></li>
-    <li><a href="#project-structure">Project Structure &amp; Layer Segregation</a></li>
-    <li><a href="#pull-requests">Pull Requests &amp; Code Review</a></li>
+    <li><a href="#project-structure">Project Structure & Layer Segregation</a></li>
+    <li><a href="#pull-requests">Pull Requests & Code Review</a></li>
     <li><a href="#github-actions">GitHub Actions — CI/CD Pipelines</a></li>
     <li><a href="#templates">Repository Templates</a></li>
+    <li><a href="#documentation-strategy">Documentation Strategy</a></li>
+    <li><a href="#code-standards">Code Standards by Stack</a></li>
     <li><a href="#checklist">Quick-Reference Checklist</a></li>
   </ol>
 </nav>
@@ -327,7 +330,7 @@ test(billing): add integration tests for invoice generation</code></pre>
 <!-- 3. PROJECT STRUCTURE -->
 <!-- ============================================================ -->
 <section id="project-structure">
-<h2>3. Project Structure &amp; Layer Segregation</h2>
+<h2>3. Project Structure & Layer Segregation</h2>
 
 <p>Regardless of stack, every project must have clear separation of concerns. The layer names may change, but the principle stays the same: <strong>each layer has one responsibility and depends only on the layers below it.</strong></p>
 
@@ -462,7 +465,7 @@ test(billing): add integration tests for invoice generation</code></pre>
 <!-- 4. PULL REQUESTS -->
 <!-- ============================================================ -->
 <section id="pull-requests">
-<h2>4. Pull Requests &amp; Code Review</h2>
+<h2>4. Pull Requests & Code Review</h2>
 
 <h3>PR template (auto-applied via GitHub)</h3>
 <pre><code>## What does this PR do?
@@ -587,18 +590,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: |
           pip install ruff mypy
-
       - name: Lint with Ruff
         run: ruff check src/ --output-format=github
-
       - name: Type check with mypy
         run: mypy src/ --ignore-missing-imports
 
@@ -607,16 +606,13 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install pytest pytest-cov
-
       - name: Run tests
         run: pytest tests/ --cov=src --cov-report=term-missing --cov-fail-under=70
 
@@ -624,7 +620,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Check layer violations
         run: |
           echo "Checking for database imports in API layer..."
@@ -652,17 +647,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
       - run: npm ci
-
       - name: Lint
         run: npx eslint src/ --max-warnings=0
-
       - name: Type check
         run: npx tsc --noEmit
 
@@ -671,14 +662,11 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
       - run: npm ci
-
       - name: Run tests
         run: npx jest --coverage --coverageThreshold='{"global":{"branches":60,"functions":70,"lines":70}}'
 
@@ -686,7 +674,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Check for console.log in production code
         run: |
           if grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v "// allowed" | grep -v ".test." | grep -v ".spec."; then
@@ -711,12 +698,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile
-
       - name: Build image (no push)
         run: docker build -t test-build:pr-${{ github.event.number }} .</code></pre>
 
@@ -879,7 +864,6 @@ body:
         - Python backend
         - JS/TS frontend
         - TLPP / Protheus
-        - TLPP / Protheus
         - Node-RED
         - Infrastructure / DevOps
     validations:
@@ -910,16 +894,117 @@ indent_style = tab</code></pre>
 
 
 <!-- ============================================================ -->
-<!-- 7. CHECKLIST -->
+<!-- 7. DOCUMENTATION STRATEGY -->
+<!-- ============================================================ -->
+<section id="documentation-strategy">
+<h2>7. Documentation Strategy</h2>
+
+<p>Documentation is a critical asset for NetZero's growth. It reduces operational risk, lowers friction in knowledge transfer, and enables AI tools to understand and assist with our processes.</p>
+
+<h3>Documentation principles</h3>
+<ul>
+  <li><strong>Digital first.</strong> All documentation is stored digitally with version control.</li>
+  <li><strong>Standardized.</strong> Use consistent formats, structure, and terminology across all teams.</li>
+  <li><strong>Current.</strong> Documentation is maintained alongside code changes — outdated docs are worse than none.</li>
+  <li><strong>Accessible.</strong> All team members must know where to find the documentation they need.</li>
+  <li><strong>AI-ready.</strong> Well-structured documentation can be leveraged by AI models for assistance and automation.</li>
+</ul>
+
+<h3>Documentation types</h3>
+<table>
+  <tr><th>Type</th><th>Purpose</th><th>Owner</th><th>Update frequency</th></tr>
+  <tr><td><strong>Process documentation</strong></td><td>How we work (branching, code review, deployment)</td><td>Engineering leads</td><td>As needed</td></tr>
+  <tr><td><strong>API documentation</strong></td><td>Endpoint specs, request/response formats</td><td>Backend team</td><td>Per release</td></tr>
+  <tr><td><strong>Architecture documentation</strong></td><td>System design, data flow, component relationships</td><td>Architects</td><td>Quarterly</td></tr>
+  <tr><td><strong>Operational procedures</strong></td><td>Deployment, monitoring, incident response</td><td>DevOps / SRE</td><td>When procedures change</td></tr>
+  <tr><td><strong>Code documentation</strong></td><td>In-code comments, docstrings, README files</td><td>Developers</td><td>With every PR</td></tr>
+</table>
+
+<h3>Documentation locations</h3>
+<ul>
+  <li><strong>Code repositories:</strong> README files, CONTRIBUTING.md, inline comments, and architecture diagrams</li>
+  <li><strong>Wiki / Knowledge base:</strong> Company-wide processes, onboarding guides, troubleshooting</li>
+  <li><strong>API docs platform:</strong> Swagger/OpenAPI for backend APIs</li>
+  <li><strong>Architecture decision records (ADRs):</strong> Significant technical decisions and their rationale</li>
+</ul>
+
+<div class="callout callout-good">
+  <strong>Good practice</strong>
+  When you write code that solves a non-obvious problem, document why you chose that solution. Future developers (including AI) will thank you.
+</div>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 8. CODE STANDARDS BY STACK -->
+<!-- ============================================================ -->
+<section id="code-standards">
+<h2>8. Code Standards by Stack</h2>
+
+<h3>Python (FastAPI / Flask / Django)</h3>
+<div class="callout callout-info">
+  <strong>Tools:</strong> Ruff (linter), Black (formatter), mypy (type checker)
+</div>
+<ul>
+  <li><strong>Style:</strong> Follow PEP 8. Use type hints for all function parameters and return types.</li>
+  <li><strong>Testing:</strong> Use pytest. Target 70%+ code coverage for new features.</li>
+  <li><strong>Naming:</strong> Functions and variables in <code>snake_case</code>, classes in <code>PascalCase</code>.</li>
+  <li><strong>Imports:</strong> Group standard library, third-party, and local imports separately.</li>
+  <li><strong>Documentation:</strong> Write docstrings for all public functions and classes using Google or NumPy style.</li>
+  <li><strong>No print():</strong> Use a logging framework (Python's built-in <code>logging</code> or similar).</li>
+</ul>
+
+<h3>JavaScript / TypeScript (React)</h3>
+<div class="callout callout-info">
+  <strong>Tools:</strong> ESLint, Prettier, TypeScript strict mode
+</div>
+<ul>
+  <li><strong>Style:</strong> Use Prettier for code formatting. ESLint enforces best practices.</li>
+  <li><strong>Type safety:</strong> All components must use TypeScript. Avoid <code>any</code> type.</li>
+  <li><strong>Naming:</strong> Components in <code>PascalCase</code>, functions and variables in <code>camelCase</code>.</li>
+  <li><strong>No console.log:</strong> Use a logging library or send logs to a service.</li>
+  <li><strong>Component structure:</strong> Keep components small and focused. Extract reusable logic into hooks.</li>
+  <li><strong>Testing:</strong> Use Jest + React Testing Library. Aim for >70% coverage.</li>
+  <li><strong>Props drilling:</strong> If you pass props through more than 3 levels, refactor using context or state management.</li>
+</ul>
+
+<h3>TLPP (Protheus / TOTVS)</h3>
+<div class="callout callout-info">
+  <strong>Tools:</strong> Manual linting (no standard TLPP linter), version control via Git
+</div>
+<ul>
+  <li><strong>Naming:</strong> Use descriptive names for variables and functions. Avoid single-letter variables except in loops.</li>
+  <li><strong>Comments:</strong> Comment complex business logic, especially around ExecAuto and field mapping.</li>
+  <li><strong>Error handling:</strong> Always check return values from ExecAuto and external function calls.</li>
+  <li><strong>Date handling:</strong> Use a shared utility for date conversions (ISO ↔ Protheus format).</li>
+  <li><strong>Layer separation:</strong> Endpoints call services, services call validation + mapping, both call data layer.</li>
+  <li><strong>Payload validation:</strong> Validate all incoming JSON before processing. Use shared validation library.</li>
+</ul>
+
+<h3>Node-RED</h3>
+<ul>
+  <li><strong>Flow organization:</strong> Use subflows for reusable logic. Name flows descriptively.</li>
+  <li><strong>Comments:</strong> Add comment nodes to explain complex flow logic.</li>
+  <li><strong>Error handling:</strong> Every output path should have error handling (catch nodes).</li>
+  <li><strong>Configuration:</strong> Never hardcode URLs, API keys, or credentials. Use environment variables or config nodes.</li>
+  <li><strong>Testing:</strong> Export flows as JSON and version control them in Git.</li>
+  <li><strong>Documentation:</strong> Document what each flow does and its expected inputs/outputs.</li>
+</ul>
+</section>
+
+
+<!-- ============================================================ -->
+<!-- 9. CHECKLIST -->
 <!-- ============================================================ -->
 <section id="checklist">
-<h2>7. Quick-Reference Checklist</h2>
+<h2>9. Quick-Reference Checklist</h2>
 
 <h3>Before starting work</h3>
 <ul>
   <li>Pull the latest <code>main</code></li>
   <li>Create a branch with the correct prefix (<code>feat/</code>, <code>fix/</code>, etc.)</li>
   <li>Check if there's an issue linked to your task</li>
+  <li>Review existing documentation related to the feature/bug</li>
 </ul>
 
 <h3>While coding</h3>
@@ -928,32 +1013,37 @@ indent_style = tab</code></pre>
   <li>Keep database access in the repository/DAO layer</li>
   <li>Write tests alongside your code, not after</li>
   <li>Commit small and often with Conventional Commit messages</li>
-  <li>No secrets, no hardcoded URLs, no <code>console.log</code></li>
+  <li>No secrets, no hardcoded URLs, no <code>console.log</code> / <code>print()</code></li>
+  <li>Add docstrings/comments for non-obvious logic</li>
+  <li>Follow the code standards for your stack (types, naming, formatting)</li>
 </ul>
 
 <h3>Before opening a PR</h3>
 <ul>
-  <li>Run the linter locally</li>
-  <li>Run tests locally and confirm they pass</li>
+  <li>Run the linter locally and fix all warnings</li>
+  <li>Run tests locally and confirm they pass with >70% coverage</li>
   <li>Rebase on top of <code>main</code> if your branch is behind</li>
   <li>Fill out the PR template completely</li>
   <li>Self-review your diff one last time</li>
+  <li>Update documentation if behavior changed</li>
 </ul>
 
 <h3>As a reviewer</h3>
 <ul>
   <li>Check architecture and layer separation first</li>
   <li>Verify tests actually cover the new behavior</li>
-  <li>Look for security issues (exposed secrets, unvalidated input)</li>
+  <li>Look for security issues (exposed secrets, unvalidated input, SQL injection)</li>
+  <li>Check that code follows the stack-specific standards</li>
   <li>Be constructive — suggest solutions, not just problems</li>
-  <li>Approve only when CI is green and you're confident</li>
+  <li>Approve only when CI is green and you're confident in the code quality</li>
 </ul>
 </section>
 
 
 <footer>
-  <p>NetZero Engineering &mdash; Development Best Practices v1.0</p>
+  <p>NetZero Engineering — Development Best Practices & Documentation Strategy v0.7</p>
   <p>This document is maintained in the <code>netzero-hq</code> GitHub organization. Changes follow the same PR process described here.</p>
+  <p><strong>Last updated:</strong> 2026-03-30</p>
 </footer>
 
 </div>
